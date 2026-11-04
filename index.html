@@ -92,23 +92,28 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="text-lg font-extrabold tracking-tight leading-none">FitMacro</h1>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">TMA v1.2</span>
+              <span id="cloudSyncBadge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">☁️ Cloud Sync</span>
             </div>
-            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Авто-умножение граммовок и встроенное видео</p>
+            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Облачное сохранение Telegram + авто-умножение</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
           <!-- Add Custom Recipe Button -->
           <button id="openAddRecipeBtn" type="button" class="px-3 py-2 rounded-xl bg-emerald-500 text-white flex items-center gap-1.5 text-xs font-extrabold shadow-sm hover:bg-emerald-600 active:scale-95 transition">
             <span>＋</span>
-            <span>Добавить рецепт</span>
+            <span>Добавить</span>
+          </button>
+
+          <!-- Backup / Restore Modal Button -->
+          <button id="openBackupBtn" type="button" title="Бэкап и перенос рецептов" class="tg-card px-2.5 py-2 rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition">
+            💾
           </button>
 
           <!-- Theme Switcher -->
           <button id="themeToggleBtn" type="button" aria-label="Переключить тему" class="tg-card p-2 rounded-xl hover:opacity-90 active:scale-95 transition">
             <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707-.707M6.343 17.657l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>
           </button>
         </div>
@@ -269,7 +274,7 @@
               </div>
             </div>
 
-            <!-- Action Buttons: "Приготовить 1..10 порций" -->
+            <!-- Action Buttons: "Приготовить 1..7 порций" -->
             <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5" id="portionButtonsContainer">
               <button type="button" data-portions="1" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">1 порц. (×1)</button>
               <button type="button" data-portions="2" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">2 порц. (×2)</button>
@@ -336,7 +341,7 @@
             </div>
           </div>
 
-          <!-- INLINE EMBEDDED VIDEO PLAYER (Plays Directly Inside the App Without Leaving) -->
+          <!-- INLINE EMBEDDED VIDEO PLAYER -->
           <div class="space-y-3">
             <div class="flex items-center justify-between gap-2">
               <div>
@@ -350,10 +355,8 @@
             </div>
 
             <div class="rounded-2xl overflow-hidden border border-slate-500/25 bg-slate-950 shadow-inner">
-              <!-- Direct Inline Video Container (Shown immediately by default!) -->
               <div id="embeddedMediaContainer" class="aspect-video w-full bg-black relative"></div>
 
-              <!-- Optional Interactive Step Visual Player (if user switches to "Пошагово") -->
               <div id="videoPlayerWrapper" class="hidden relative aspect-video w-full bg-slate-900 flex flex-col justify-between p-4">
                 <div class="flex items-center justify-between z-10">
                   <span id="playerStepPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Шаг 1</span>
@@ -374,7 +377,6 @@
               </div>
             </div>
 
-            <!-- Numbered Steps -->
             <ol id="stepsList" class="space-y-2"></ol>
           </div>
 
@@ -383,7 +385,7 @@
     </div>
   </div>
 
-  <!-- Add Custom Recipe Modal (Supports Multi-Goals, Multi-Meals, Inline Video & Auto-Multiplier) -->
+  <!-- Add Custom Recipe Modal -->
   <div id="addRecipeModal" class="fixed inset-0 z-50 hidden">
     <div id="addRecipeBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
     <div class="relative z-10 flex flex-col justify-end min-h-screen pointer-events-none">
@@ -391,7 +393,7 @@
         <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-500/15">
           <div>
             <h3 class="text-base font-extrabold">＋ Добавить свой рецепт</h3>
-            <p class="text-[11px] tg-hint">Выбирай сразу несколько разделов (например, Сушка + Поддержка) и вставляй ссылку на видео</p>
+            <p class="text-[11px] tg-hint">Сохраняется в облако Telegram CloudStorage (не пропадает при очистке кэша)</p>
           </div>
           <button id="closeAddRecipeBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold">✕</button>
         </div>
@@ -411,7 +413,7 @@
             </div>
           </div>
 
-          <!-- Multi-Select Goals (Можно выбрать сразу Сушка + Поддержка и т.д.) -->
+          <!-- Multi-Select Goals -->
           <div>
             <label class="block font-bold mb-1.5 tg-hint">🎯 В какие разделы по цели добавить? (можно выбрать несколько)</label>
             <div class="flex flex-wrap gap-2" id="newGoalsCheckboxGroup">
@@ -515,9 +517,48 @@
 
           <div class="pt-2 flex items-center justify-end gap-2">
             <button id="exportJsonBtn" type="button" class="px-3 py-2.5 rounded-xl bg-sky-500/15 text-sky-400 font-bold hover:bg-sky-500/25 transition">Скопировать JSON</button>
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">Сохранить в каталог</button>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">Сохранить в облако</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup / Restore Modal -->
+  <div id="backupModal" class="fixed inset-0 z-50 hidden">
+    <div id="backupBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+    <div class="relative z-10 flex flex-col justify-end min-h-screen pointer-events-none">
+      <div class="pointer-events-auto w-full max-w-xl mx-auto tg-card rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-slide-up">
+        <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-500/15">
+          <div>
+            <h3 class="text-base font-extrabold">💾 Облако и резервная копия рецептов</h3>
+            <p class="text-[11px] tg-hint">Твои рецепты синхронизируются с Telegram CloudStorage + можно скопировать/восстановить JSON</p>
+          </div>
+          <button id="closeBackupBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold">✕</button>
+        </div>
+
+        <div class="p-4 space-y-3 overflow-y-auto text-xs">
+          <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-emerald-400">Статус хранилища</div>
+              <div id="storageStatsText" class="text-[11px] tg-hint mt-0.5">Своих рецептов: 0</div>
+            </div>
+            <button id="copyAllCustomJsonBtn" type="button" class="px-3 py-2 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">
+              📋 Скопировать все свои рецепты
+            </button>
+          </div>
+
+          <div>
+            <label class="block font-bold mb-1 tg-hint">Восстановить / импортировать рецепты из JSON</label>
+            <textarea id="importJsonTextarea" rows="5" placeholder="Вставь сюда скопированный JSON своих рецептов и нажми «Импортировать»..." class="w-full tg-card rounded-xl p-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div class="flex items-center justify-end gap-2">
+            <button id="importJsonConfirmBtn" type="button" class="px-4 py-2.5 rounded-xl bg-sky-500 text-white font-extrabold hover:bg-sky-600 transition">
+              📥 Импортировать и сохранить в облако
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -530,13 +571,7 @@
 
   <script>
     /********************************************************************
-     * 1. БАЗА ДАННЫХ РЕЦЕПТОВ С ПОДДЕРЖКОЙ НЕСКОЛЬКИХ РАЗДЕЛОВ (МАССИВЫ ТЕГОВ)
-     *
-     * Теперь у каждого блюда:
-     * - goals: ["Сушка", "Поддержка"] — массив целей! Блюдо покажется и в фильтре «Сушка», и в фильтре «Поддержка».
-     * - meals: ["Обед", "Ужин"] — массив приёмов пищи!
-     * - baseServings: 1 (или любое число X). Когда ты нажимаешь «5 порций», бот сам умножает каждый ингредиент на 5!
-     * - videoUrl: встроенный плеер открывается СРАЗУ внутри карточки блюда без ухода из Telegram.
+     * 1. БАЗА ДАННЫХ РЕЦЕПТОВ ПО УМОЛЧАНИЮ
      ********************************************************************/
     const DEFAULT_RECIPES_DATA = [
       {
@@ -553,13 +588,7 @@
         gradient: "linear-gradient(135deg, #0f766e 0%, #0369a1 55%, #1e1b4b 100%)",
         baseServings: 1,
         macrosMode: "per_portion",
-        macros: {
-          kcal: 495,
-          protein: 52,
-          fat: 9,
-          carbs: 51
-        },
-        // Прямой встроенный видеоролик (открывается прямо в плеере приложения)
+        macros: { kcal: 495, protein: 52, fat: 9, carbs: 51 },
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         videoDuration: "00:15",
         ingredients: [
@@ -592,12 +621,7 @@
         gradient: "linear-gradient(135deg, #065f46 0%, #047857 50%, #0f172a 100%)",
         baseServings: 1,
         macrosMode: "per_portion",
-        macros: {
-          kcal: 410,
-          protein: 58,
-          fat: 7,
-          carbs: 28
-        },
+        macros: { kcal: 410, protein: 58, fat: 7, carbs: 28 },
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
         videoDuration: "00:15",
         ingredients: [
@@ -629,12 +653,7 @@
         gradient: "linear-gradient(135deg, #7c2d12 0%, #9a3412 50%, #1e1b4b 100%)",
         baseServings: 1,
         macrosMode: "per_portion",
-        macros: {
-          kcal: 865,
-          protein: 56,
-          fat: 26,
-          carbs: 98
-        },
+        macros: { kcal: 865, protein: 56, fat: 26, carbs: 98 },
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
         videoDuration: "01:00",
         ingredients: [
@@ -666,12 +685,7 @@
         gradient: "linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #0f172a 100%)",
         baseServings: 1,
         macrosMode: "per_portion",
-        macros: {
-          kcal: 470,
-          protein: 44,
-          fat: 16,
-          carbs: 36
-        },
+        macros: { kcal: 470, protein: 44, fat: 16, carbs: 36 },
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoy.mp4",
         videoDuration: "00:15",
         ingredients: [
@@ -702,12 +716,7 @@
         gradient: "linear-gradient(135deg, #be123c 0%, #e11d48 50%, #1e1b4b 100%)",
         baseServings: 1,
         macrosMode: "per_portion",
-        macros: {
-          kcal: 615,
-          protein: 50,
-          fat: 21,
-          carbs: 56
-        },
+        macros: { kcal: 615, protein: 50, fat: 21, carbs: 56 },
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
         videoDuration: "00:15",
         comboBreakdown: [
@@ -746,12 +755,7 @@
         gradient: "linear-gradient(135deg, #d97706 0%, #ea580c 50%, #1e1b4b 100%)",
         baseServings: 1,
         macrosMode: "per_portion",
-        macros: {
-          kcal: 640,
-          protein: 47,
-          fat: 31,
-          carbs: 43
-        },
+        macros: { kcal: 640, protein: 47, fat: 31, carbs: 43 },
         videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         videoDuration: "00:15",
         comboBreakdown: [
@@ -779,8 +783,16 @@
     ];
 
     /********************************************************************
-     * 2. СОСТОЯНИЕ И НОРМАЛИЗАЦИЯ МНОЖЕСТВЕННЫХ ТЕГОВ (GOALS & MEALS)
+     * 2. НАДЁЖНОЕ ТРОЙНОЕ ХРАНИЛИЩЕ:
+     *    1) Telegram CloudStorage (хранится на серверах Telegram, привязано к аккаунту!)
+     *    2) IndexedDB (постоянная база браузера)
+     *    3) localStorage (быстрый кэш с миграцией старых ключей)
      ********************************************************************/
+    const STORAGE_KEY = "fitmacro_custom_recipes_v2";
+    const LEGACY_KEYS = ["fitmacro_custom_recipes_v1", "fitmacro_recipes"];
+    const CLOUD_CHUNK_PREFIX = "fm_rcp_chunk_";
+    const CLOUD_META_KEY = "fm_rcp_meta";
+
     const state = {
       activeCategory: "home",
       filters: {
@@ -797,14 +809,12 @@
       customRecipes: []
     };
 
-    // Нормализует поле goals: поддерживает и старую строку goal: "Сушка", и новый массив goals: ["Сушка", "Поддержка"]
     function getRecipeGoals(recipe) {
       if (Array.isArray(recipe.goals) && recipe.goals.length > 0) return recipe.goals;
       if (recipe.goal) return [recipe.goal];
       return ["Поддержка"];
     }
 
-    // Нормализует поле meals: поддерживает и старую строку meal: "Обед", и новый массив meals: ["Обед", "Ужин"]
     function getRecipeMeals(recipe) {
       if (Array.isArray(recipe.meals) && recipe.meals.length > 0) return recipe.meals;
       if (recipe.meal) return [recipe.meal];
@@ -815,21 +825,183 @@
       return [...state.customRecipes, ...DEFAULT_RECIPES_DATA];
     }
 
-    function loadCustomRecipes() {
-      try {
-        const raw = localStorage.getItem("fitmacro_custom_recipes_v2");
-        if (raw) {
-          state.customRecipes = JSON.parse(raw) || [];
+    // Дедупликация рецептов по id
+    function mergeRecipeArrays(arrA, arrB) {
+      const map = new Map();
+      [...(arrA || []), ...(arrB || [])].forEach(item => {
+        if (item && item.id) {
+          map.set(item.id, item);
         }
+      });
+      return Array.from(map.values());
+    }
+
+    // --- IndexedDB Helper ---
+    function openIDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error("No IDB"));
+        const req = window.indexedDB.open("FitMacroDB", 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("store")) {
+            db.createObjectStore("store");
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function saveToIDB(recipes) {
+      try {
+        const db = await openIDB();
+        const tx = db.transaction("store", "readwrite");
+        tx.objectStore("store").put(JSON.stringify(recipes), STORAGE_KEY);
+      } catch (e) {}
+    }
+
+    async function loadFromIDB() {
+      try {
+        const db = await openIDB();
+        return await new Promise((resolve) => {
+          const tx = db.transaction("store", "readonly");
+          const req = tx.objectStore("store").get(STORAGE_KEY);
+          req.onsuccess = () => {
+            resolve(req.result ? JSON.parse(req.result) : []);
+          };
+          req.onerror = () => resolve([]);
+        });
       } catch (e) {
-        state.customRecipes = [];
+        return [];
       }
+    }
+
+    // --- Telegram CloudStorage Helper (Разбивает JSON на чанки по 3500 символов, чтобы обойти лимит 4096 байт на ключ) ---
+    function getTelegramCloudStorage() {
+      const tg = window.Telegram && window.Telegram.WebApp;
+      if (tg && tg.CloudStorage && typeof tg.CloudStorage.setItem === "function") {
+        // CloudStorage поддерживается начиная с версии 6.9
+        if (!tg.isVersionAtLeast || tg.isVersionAtLeast("6.9")) {
+          return tg.CloudStorage;
+        }
+      }
+      return null;
+    }
+
+    function saveToTelegramCloud(recipes) {
+      const cloud = getTelegramCloudStorage();
+      if (!cloud) return;
+
+      try {
+        const payload = JSON.stringify(recipes || []);
+        const chunkSize = 3500;
+        const totalChunks = Math.ceil(payload.length / chunkSize);
+
+        for (let i = 0; i < totalChunks; i++) {
+          const slice = payload.slice(i * chunkSize, (i + 1) * chunkSize);
+          cloud.setItem(`${CLOUD_CHUNK_PREFIX}${i}`, slice, () => {});
+        }
+        cloud.setItem(CLOUD_META_KEY, JSON.stringify({ count: totalChunks, updatedAt: Date.now() }), () => {});
+      } catch (e) {}
+    }
+
+    function loadFromTelegramCloud() {
+      return new Promise((resolve) => {
+        const cloud = getTelegramCloudStorage();
+        if (!cloud) return resolve([]);
+
+        try {
+          cloud.getItem(CLOUD_META_KEY, (err, metaRaw) => {
+            if (err || !metaRaw) return resolve([]);
+            let meta;
+            try {
+              meta = JSON.parse(metaRaw);
+            } catch (e) {
+              return resolve([]);
+            }
+            const count = Number(meta && meta.count) || 0;
+            if (count <= 0) return resolve([]);
+
+            const keys = [];
+            for (let i = 0; i < count; i++) {
+              keys.push(`${CLOUD_CHUNK_PREFIX}${i}`);
+            }
+
+            cloud.getItems(keys, (err2, values) => {
+              if (err2 || !values) return resolve([]);
+              let fullStr = "";
+              for (let i = 0; i < count; i++) {
+                fullStr += values[`${CLOUD_CHUNK_PREFIX}${i}`] || "";
+              }
+              try {
+                const parsed = JSON.parse(fullStr);
+                resolve(Array.isArray(parsed) ? parsed : []);
+              } catch (e) {
+                resolve([]);
+              }
+            });
+          });
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    }
+
+    // --- Единая функция загрузки и сохранения во все 3 хранилища ---
+    async function loadCustomRecipes() {
+      let localArr = [];
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) localArr = JSON.parse(raw) || [];
+
+        // Проверяем старые ключи на случай миграции
+        LEGACY_KEYS.forEach(k => {
+          const oldRaw = localStorage.getItem(k);
+          if (oldRaw) {
+            try {
+              const oldParsed = JSON.parse(oldRaw);
+              if (Array.isArray(oldParsed)) {
+                localArr = mergeRecipeArrays(localArr, oldParsed);
+              }
+            } catch (e) {}
+          }
+        });
+      } catch (e) {}
+
+      const idbArr = await loadFromIDB();
+      const cloudArr = await loadFromTelegramCloud();
+
+      const merged = mergeRecipeArrays(mergeRecipeArrays(cloudArr, idbArr), localArr);
+      state.customRecipes = merged;
+
+      // Синхронизируем обратно во все хранилища, если нашли рецепты в одном из них
+      if (merged.length > 0) {
+        saveCustomRecipes();
+      }
+      updateCounts();
+      renderRecipesGrid();
+      updateStorageBadge();
     }
 
     function saveCustomRecipes() {
       try {
-        localStorage.setItem("fitmacro_custom_recipes_v2", JSON.stringify(state.customRecipes));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.customRecipes));
       } catch (e) {}
+      saveToIDB(state.customRecipes);
+      saveToTelegramCloud(state.customRecipes);
+      updateStorageBadge();
+    }
+
+    function updateStorageBadge() {
+      const badge = document.getElementById("cloudSyncBadge");
+      const statsEl = document.getElementById("storageStatsText");
+      const hasCloud = Boolean(getTelegramCloudStorage());
+      if (badge) {
+        badge.textContent = hasCloud ? `☁️ TG Облако (${state.customRecipes.length})` : `💾 Память (${state.customRecipes.length})`;
+      }
+      if (statsEl) {
+        statsEl.textContent = `Своих рецептов сохранено: ${state.customRecipes.length} шт. (${hasCloud ? "Синхронизировано с Telegram CloudStorage" : "Локальное хранилище + IndexedDB"})`;
+      }
     }
 
     /********************************************************************
@@ -860,18 +1032,16 @@
     }
 
     /********************************************************************
-     * 4. ВСТРОЕННЫЙ ВИДЕО-ПЛЕЕР (ПРЯМО В ПРИЛОЖЕНИИ БЕЗ ПЕРЕХОДА НА ЮТУБ)
+     * 4. ВСТРОЕННЫЙ ВИДЕО-ПЛЕЕР
      ********************************************************************/
     function parseVideoSource(recipe) {
       const raw = (recipe.videoUrl || recipe.youtubeId || "").trim();
       if (!raw) return null;
 
-      // Прямой видеофайл (.mp4, .webm, .mov)
       if (/\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(raw)) {
         return { type: "video", src: raw, label: "Встроенное MP4-видео" };
       }
 
-      // 11-символьный YouTube ID
       if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) {
         return {
           type: "youtube",
@@ -880,7 +1050,6 @@
         };
       }
 
-      // Любая ссылка YouTube / YouTube Shorts / youtu.be
       const ytMatch = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
       if (ytMatch && ytMatch[1]) {
         return {
@@ -890,7 +1059,6 @@
         };
       }
 
-      // VK Video / Rutube embed URL или прочий видеофайл
       if (raw.includes("vk.com/video_ext.php") || raw.includes("rutube.ru/play/embed")) {
         return { type: "youtube", embedUrl: raw, label: "Встроенный видеоплеер" };
       }
@@ -905,7 +1073,6 @@
       const parsed = parseVideoSource(recipe);
 
       if (!parsed) {
-        // Если ссылки на видео нет — показываем интерактивный пошаговый экран
         mediaContainer.classList.add("hidden");
         mediaContainer.innerHTML = "";
         stepWrapper.classList.remove("hidden");
@@ -913,7 +1080,6 @@
         return;
       }
 
-      // Показываем видео сразу внутри приложения!
       mediaContainer.classList.remove("hidden");
       stepWrapper.classList.add("hidden");
       subtitleEl.textContent = `${parsed.label} • воспроизводится прямо здесь`;
@@ -962,7 +1128,7 @@
         if (user && user.first_name) {
           const greetingEl = document.getElementById("userGreeting");
           if (greetingEl) {
-            greetingEl.textContent = `Привет, ${user.first_name}! Умножаем граммовки в 1 клик`;
+            greetingEl.textContent = `Привет, ${user.first_name}! Рецепты синхронизированы с облаком`;
           }
         }
 
@@ -971,6 +1137,8 @@
             closeDetailModal();
           } else if (!document.getElementById("addRecipeModal").classList.contains("hidden")) {
             closeAddRecipeModal();
+          } else if (!document.getElementById("backupModal").classList.contains("hidden")) {
+            closeBackupModal();
           }
         });
       } catch (err) {}
@@ -991,10 +1159,12 @@
     function getDishArtHtml(recipe) {
       const goals = getRecipeGoals(recipe);
       const meals = getRecipeMeals(recipe);
+      const isCustom = state.customRecipes.some(r => r.id === recipe.id);
       return `
         <div class="relative h-36 w-full overflow-hidden flex items-end p-3.5" style="background: ${recipe.gradient || 'linear-gradient(135deg, #059669 0%, #0f172a 100%)'};">
           <div class="absolute -right-4 -top-4 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
           <div class="absolute right-3 top-2.5 text-5xl select-none drop-shadow-md">${recipe.emoji || "🍲"}</div>
+          ${isCustom ? `<span class="absolute left-3 top-2.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500 text-white shadow">☁️ Мой рецепт</span>` : ""}
           <div class="relative z-10 flex flex-wrap items-center gap-1 w-full">
             ${goals.map(g => `
               <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-black/55 text-emerald-300 border border-emerald-400/30 backdrop-blur-sm">
@@ -1029,7 +1199,6 @@
         const itemGoals = getRecipeGoals(item);
         const itemMeals = getRecipeMeals(item);
 
-        // Мульти-проверка: если блюдо добавлено в ["Сушка", "Поддержка"], оно отображается в обоих разделах!
         if (state.filters.goal !== "all" && !itemGoals.includes(state.filters.goal)) return false;
         if (state.filters.time !== "all" && item.timeCategory !== state.filters.time) return false;
         if (state.filters.meal !== "all" && !itemMeals.includes(state.filters.meal)) return false;
@@ -1144,7 +1313,7 @@
 
       triggerHaptic("light");
       state.currentRecipeId = recipeId;
-      state.portions = 1; // Открываем на 1 порции, чтобы пользователь наглядно нажал «5 порц. (×5)» и увидел умножение
+      state.portions = 1;
       state.activeStepIndex = 0;
       stopStepAutoPlay();
 
@@ -1188,10 +1357,8 @@
         ffSection.classList.add("hidden");
       }
 
-      // Сразу монтируем встроенное видео внутри модалки!
       renderInlineVideoPlayer(recipe);
       setPlayerTabUI("video");
-
       updateModalDynamicContent();
 
       const modal = document.getElementById("detailModal");
@@ -1273,7 +1440,6 @@
         `).join("");
       }
 
-      // Наглядная формула умножения ботом: показывает 1 порцию × N = Итого
       document.getElementById("multiplierFormulaHint").textContent =
         p === 1
           ? "Сейчас показана норма на 1 порцию (нажми «5 порц.», чтобы умножить всё на 5)"
@@ -1371,7 +1537,7 @@
     }
 
     /********************************************************************
-     * 8. КОНСТРУКТОР СВОЕГО РЕЦЕПТА С НЕСКОЛЬКИМИ РАЗДЕЛАМИ
+     * 8. КОНСТРУКТОР СВОЕГО РЕЦЕПТА И МОДАЛКА БЭКАПА
      ********************************************************************/
     function openAddRecipeModal() {
       triggerHaptic("light");
@@ -1384,15 +1550,27 @@
       document.body.style.overflow = "";
     }
 
+    function openBackupModal() {
+      triggerHaptic("light");
+      updateStorageBadge();
+      document.getElementById("importJsonTextarea").value =
+        state.customRecipes.length > 0 ? JSON.stringify(state.customRecipes, null, 2) : "";
+      document.getElementById("backupModal").classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeBackupModal() {
+      document.getElementById("backupModal").classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
     function buildRecipeObjectFromForm() {
       const title = document.getElementById("newTitle").value.trim() || "Моё блюдо";
       const category = document.getElementById("newCategory").value;
 
-      // Считываем все выбранные чекбоксы целей (например, ["Сушка", "Поддержка"])
       const checkedGoals = Array.from(document.querySelectorAll('input[name="newGoalItem"]:checked')).map(el => el.value);
       const goals = checkedGoals.length > 0 ? checkedGoals : ["Поддержка"];
 
-      // Считываем все выбранные приёмы пищи
       const checkedMeals = Array.from(document.querySelectorAll('input[name="newMealItem"]:checked')).map(el => el.value);
       const meals = checkedMeals.length > 0 ? checkedMeals : ["Обед"];
 
@@ -1571,7 +1749,7 @@
         updateCounts();
         renderRecipesGrid();
         closeDetailModal();
-        showToast("Рецепт удалён");
+        showToast("Рецепт удалён из облака и памяти");
       });
 
       // Portion multiplier buttons
@@ -1675,11 +1853,14 @@
         state.customRecipes.unshift(newRecipe);
         saveCustomRecipes();
         updateCounts();
+        // Сбрасываем активные фильтры, чтобы новое блюдо гарантированно было видно сразу
+        state.filters = { goal: "all", time: "all", meal: "all" };
         state.activeCategory = newRecipe.category;
+        renderFilterChipsUI();
         renderRecipesGrid();
         closeAddRecipeModal();
         e.target.reset();
-        showToast("Рецепт сохранён во все выбранные разделы!");
+        showToast("Сохранено в облако Telegram!");
         openDetailModal(newRecipe.id);
       });
 
@@ -1687,16 +1868,45 @@
         const obj = buildRecipeObjectFromForm();
         copyTextToClipboard(JSON.stringify(obj, null, 2), "JSON-объект скопирован!");
       });
+
+      // Backup / Restore Modal Events
+      document.getElementById("openBackupBtn").addEventListener("click", openBackupModal);
+      document.getElementById("closeBackupBtn").addEventListener("click", closeBackupModal);
+      document.getElementById("backupBackdrop").addEventListener("click", closeBackupModal);
+
+      document.getElementById("copyAllCustomJsonBtn").addEventListener("click", () => {
+        if (state.customRecipes.length === 0) {
+          showToast("У тебя пока нет добавленных рецептов");
+          return;
+        }
+        copyTextToClipboard(JSON.stringify(state.customRecipes, null, 2), "Все твои рецепты скопированы!");
+      });
+
+      document.getElementById("importJsonConfirmBtn").addEventListener("click", () => {
+        const raw = document.getElementById("importJsonTextarea").value.trim();
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          const list = Array.isArray(parsed) ? parsed : [parsed];
+          state.customRecipes = mergeRecipeArrays(list, state.customRecipes);
+          saveCustomRecipes();
+          updateCounts();
+          renderRecipesGrid();
+          closeBackupModal();
+          showToast(`Импортировано рецептов: ${list.length}`);
+        } catch (err) {
+          showToast("Ошибка: проверь формат JSON");
+        }
+      });
     }
 
     // Boot Application
     window.addEventListener("DOMContentLoaded", () => {
-      loadCustomRecipes();
       initTelegramSDK();
-      updateCounts();
       renderFilterChipsUI();
       renderRecipesGrid();
       bindEvents();
+      loadCustomRecipes();
     });
   </script>
 </body>
