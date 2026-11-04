@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>FitMacro TMA — Калькулятор порций, КБЖУ и видео-рецепты</title>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --tg-bg: var(--tg-theme-bg-color, #0f172a);
+      --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #1e293b);
+      --tg-text: var(--tg-theme-text-color, #f8fafc);
+      --tg-hint: var(--tg-theme-hint-color, #94a3b8);
+      --tg-link: var(--tg-theme-link-color, #38bdf8);
+      --tg-button: var(--tg-theme-button-color, #10b981);
+      --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+      --card-border: rgba(148, 163, 184, 0.14);
+    }
+
+    body.light-mode {
+      --tg-bg: #f8fafc;
+      --tg-secondary-bg: #ffffff;
+      --tg-text: #0f172a;
+      --tg-hint: #64748b;
+      --tg-link: #0284c7;
+      --tg-button: #10b981;
+      --tg-button-text: #ffffff;
+      --card-border: rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--tg-bg);
+      color: var(--tg-text);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .tg-card {
+      background-color: var(--tg-secondary-bg);
+      border: 1px solid var(--card-border);
+    }
+
+    .tg-hint {
+      color: var(--tg-hint);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-24 selection:bg-emerald-500 selection:text-white">
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 backdrop-blur-md bg-opacity-85 border-b border-slate-500/15" style="background-color: var(--tg-bg);">
+    <div class="max-w-3xl mx-auto px-4 pt-3 pb-3">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg font-extrabold tracking-tight leading-none">FitMacro</h1>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">TMA v1.2</span>
+            </div>
+            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Авто-умножение граммовок и встроенное видео</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Add Custom Recipe Button -->
+          <button id="openAddRecipeBtn" type="button" class="px-3 py-2 rounded-xl bg-emerald-500 text-white flex items-center gap-1.5 text-xs font-extrabold shadow-sm hover:bg-emerald-600 active:scale-95 transition">
+            <span>＋</span>
+            <span>Добавить рецепт</span>
+          </button>
+
+          <!-- Theme Switcher -->
+          <button id="themeToggleBtn" type="button" aria-label="Переключить тему" class="tg-card p-2 rounded-xl hover:opacity-90 active:scale-95 transition">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707-.707M6.343 17.657l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Section Segmented Tabs -->
+      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl tg-card">
+        <button id="tabHomeBtn" type="button" data-category="home" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all bg-emerald-500 text-white shadow-sm">
+          <span>🍳</span>
+          <span>Домашняя кухня</span>
+          <span id="countHome" class="text-[11px] px-1.5 py-0.5 rounded-full bg-black/20">4</span>
+        </button>
+        <button id="tabFastfoodBtn" type="button" data-category="fastfood" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all tg-hint hover:opacity-90">
+          <span>🍔</span>
+          <span>Фастфуд-хаки</span>
+          <span id="countFastfood" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-500/15">2</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-3xl mx-auto px-4 pt-4 space-y-4">
+
+    <!-- Search + Filter Bar -->
+    <div class="flex flex-col sm:flex-row gap-2.5">
+      <div class="relative flex-1">
+        <svg class="w-4 h-4 tg-hint absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input id="searchInput" type="text" placeholder="Поиск по блюду, сети или ингредиенту..." class="w-full tg-card rounded-xl pl-10 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/60 placeholder:text-slate-400" />
+        <button id="clearSearchBtn" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-xs tg-hint hover:opacity-80 px-1.5 py-0.5">✕</button>
+      </div>
+
+      <button id="toggleFiltersBtn" type="button" class="tg-card px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between sm:justify-center gap-2 hover:opacity-90 transition">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+          </svg>
+          <span>Фильтры тегов</span>
+        </span>
+        <span id="activeFilterCount" class="hidden px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">0</span>
+      </button>
+    </div>
+
+    <!-- Multi-Filter Panel -->
+    <section id="filtersPanel" class="tg-card rounded-2xl p-3.5 space-y-3">
+      <!-- Goal Filter -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[11px] font-bold uppercase tracking-wider tg-hint">🎯 Цель по КБЖУ (одно блюдо может быть в нескольких)</span>
+          <button id="resetFiltersBtn" type="button" class="text-[11px] text-emerald-400 font-semibold hover:underline hidden">Сбросить все</button>
+        </div>
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="goalFilterGroup">
+          <button type="button" data-filter-type="goal" data-value="all" class="filter-chip active-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Все цели</button>
+          <button type="button" data-filter-type="goal" data-value="Сушка" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🔥 Сушка</button>
+          <button type="button" data-filter-type="goal" data-value="Поддержка" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">⚖️ Поддержка</button>
+          <button type="button" data-filter-type="goal" data-value="Набор массы" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">💪 Набор массы</button>
+        </div>
+      </div>
+
+      <!-- Time Filter -->
+      <div>
+        <span class="block text-[11px] font-bold uppercase tracking-wider tg-hint mb-1.5">⏱ Время получения / готовки</span>
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="timeFilterGroup">
+          <button type="button" data-filter-type="time" data-value="all" class="filter-chip active-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Любое</button>
+          <button type="button" data-filter-type="time" data-value="Быстро" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">⚡ Быстро (до 15 мин)</button>
+          <button type="button" data-filter-type="time" data-value="Средне" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🕒 Средне (15–30 мин)</button>
+          <button type="button" data-filter-type="time" data-value="Долго" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🍲 Долго (30+ мин)</button>
+        </div>
+      </div>
+
+      <!-- Meal Type Filter -->
+      <div>
+        <span class="block text-[11px] font-bold uppercase tracking-wider tg-hint mb-1.5">🍽 Приём пищи (поддерживает несколько тегов)</span>
+        <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="mealFilterGroup">
+          <button type="button" data-filter-type="meal" data-value="all" class="filter-chip active-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Все приёмы</button>
+          <button type="button" data-filter-type="meal" data-value="Завтрак" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🌅 Завтрак</button>
+          <button type="button" data-filter-type="meal" data-value="Обед" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">☀️ Обед</button>
+          <button type="button" data-filter-type="meal" data-value="Ужин" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🌙 Ужин</button>
+          <button type="button" data-filter-type="meal" data-value="Перекус" class="filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🥤 Перекус</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Context Banner for Fastfood Hacks -->
+    <div id="fastfoodBanner" class="hidden rounded-2xl p-3.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-rose-500/15 border border-amber-500/30">
+      <div class="flex items-start gap-3">
+        <div class="text-2xl shrink-0">🍟</div>
+        <div class="text-xs leading-relaxed">
+          <p class="font-bold text-amber-400 mb-0.5">Правило фастфуд-хакинга: 40–55 г белка при ≤650 ккал</p>
+          <p class="tg-hint">Один сет может одновременно подходить под «Сушку» и «Поддержку» — выбирай количество порций, и бот сам пересчитает состав и КБЖУ.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <section id="recipesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></section>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden tg-card rounded-2xl p-8 text-center space-y-3">
+      <div class="text-4xl">🥗</div>
+      <h3 class="text-base font-bold">Ничего не найдено по этим фильтрам</h3>
+      <p class="text-xs tg-hint max-w-sm mx-auto">Попробуй выбрать другую цель или сбросить фильтр времени.</p>
+      <button id="emptyResetBtn" type="button" class="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition">Сбросить фильтры</button>
+    </div>
+
+  </main>
+
+  <!-- Recipe / Combo Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden">
+    <div id="modalBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+
+    <div class="relative z-10 flex flex-col justify-end min-h-screen pointer-events-none">
+      <div class="pointer-events-auto w-full max-w-2xl mx-auto tg-card rounded-t-3xl max-h-[94vh] flex flex-col overflow-hidden shadow-2xl animate-slide-up">
+        
+        <!-- Sticky Modal Header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-500/15 shrink-0">
+          <div class="flex items-center gap-2 truncate pr-2">
+            <span id="modalCategoryBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400"></span>
+            <span id="modalTimeBadge" class="text-xs tg-hint font-medium"></span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="deleteCustomRecipeBtn" type="button" class="hidden px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 text-[11px] font-bold hover:bg-rose-500/25 transition">Удалить</button>
+            <button id="closeModalBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold hover:bg-slate-500/25 transition">✕</button>
+          </div>
+        </div>
+
+        <!-- Scrollable Modal Body -->
+        <div id="modalScrollBody" class="overflow-y-auto p-4 sm:p-5 space-y-5">
+          
+          <!-- Dish Hero Preview + Multi-Tags -->
+          <div class="relative rounded-2xl overflow-hidden border border-slate-500/15">
+            <div id="modalHeroVisual" class="h-40 sm:h-48 w-full flex items-end p-4 bg-cover bg-center relative">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent"></div>
+              <div class="relative z-10 w-full">
+                <div id="modalTagsRow" class="flex flex-wrap gap-1.5 mb-2"></div>
+                <h2 id="modalTitle" class="text-lg sm:text-2xl font-extrabold text-white leading-tight"></h2>
+                <p id="modalSubtitle" class="text-xs text-slate-300 mt-1"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- AUTOMATIC BOT MULTIPLIER: "Приготовить N порций" -->
+          <div class="rounded-2xl p-4 bg-emerald-500/10 border-2 border-emerald-500/35 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs sm:text-sm font-extrabold text-emerald-400 uppercase tracking-wide" id="portionLabelTitle">🤖 Авто-пересчёт граммовок ботом</div>
+                <div class="text-[11px] tg-hint mt-0.5">
+                  База рецепта: <span id="baseServingsHint" class="font-bold text-white">на 1 порцию</span> → нажми сколько готовишь, и вес сам умножится
+                </div>
+              </div>
+              <!-- Custom number stepper -->
+              <div class="flex items-center gap-1 tg-card rounded-xl p-1 shrink-0 border border-emerald-500/30">
+                <button id="portionMinusBtn" type="button" class="w-7 h-7 rounded-lg bg-slate-500/20 text-sm font-extrabold hover:bg-slate-500/30 transition">−</button>
+                <input id="customPortionsInput" type="number" min="1" max="50" value="1" class="w-11 text-center bg-transparent text-xs font-extrabold focus:outline-none" />
+                <button id="portionPlusBtn" type="button" class="w-7 h-7 rounded-lg bg-slate-500/20 text-sm font-extrabold hover:bg-slate-500/30 transition">+</button>
+              </div>
+            </div>
+
+            <!-- Action Buttons: "Приготовить 1..10 порций" -->
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5" id="portionButtonsContainer">
+              <button type="button" data-portions="1" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">1 порц. (×1)</button>
+              <button type="button" data-portions="2" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">2 порц. (×2)</button>
+              <button type="button" data-portions="3" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">3 порц. (×3)</button>
+              <button type="button" data-portions="4" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">4 порц. (×4)</button>
+              <button type="button" data-portions="5" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">🔥 5 порц. (×5)</button>
+              <button type="button" data-portions="7" class="portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition">7 порц. (×7)</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Auto-Multiplied Ingredients Table -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h3 id="shoppingSectionTitle" class="text-xs font-bold uppercase tracking-wider text-emerald-400">⚖️ Итого граммовок для закупки / готовки</h3>
+                <p id="multiplierFormulaHint" class="text-[11px] tg-hint">Все числа автоматически умножены ботом</p>
+              </div>
+              <button id="copyShoppingBtn" type="button" class="text-[11px] px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 active:scale-95 transition shrink-0">
+                📋 Скопировать расчёт
+              </button>
+            </div>
+            <div id="ingredientsListContainer" class="space-y-1.5"></div>
+          </div>
+
+          <!-- Dynamic KBZHU Macro Cards -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider tg-hint">КБЖУ <span id="macroMultiplierLabel" class="text-emerald-400">(на 1 порцию)</span></h3>
+              <span id="proteinRatioBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-sky-500/15 text-sky-400"></span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-center">
+              <div class="tg-card rounded-2xl p-2.5">
+                <div class="text-[11px] tg-hint font-medium">Калории</div>
+                <div id="macroKcal" class="text-base sm:text-lg font-extrabold text-amber-400 mt-0.5">0</div>
+                <div id="macroPerOneKcal" class="text-[10px] tg-hint">ккал</div>
+              </div>
+              <div class="tg-card rounded-2xl p-2.5">
+                <div class="text-[11px] tg-hint font-medium">Белки</div>
+                <div id="macroProtein" class="text-base sm:text-lg font-extrabold text-emerald-400 mt-0.5">0 г</div>
+                <div id="macroPerOneProtein" class="text-[10px] tg-hint">мышцы</div>
+              </div>
+              <div class="tg-card rounded-2xl p-2.5">
+                <div class="text-[11px] tg-hint font-medium">Жиры</div>
+                <div id="macroFat" class="text-base sm:text-lg font-extrabold text-rose-400 mt-0.5">0 г</div>
+                <div id="macroPerOneFat" class="text-[10px] tg-hint">гормоны</div>
+              </div>
+              <div class="tg-card rounded-2xl p-2.5">
+                <div class="text-[11px] tg-hint font-medium">Углеводы</div>
+                <div id="macroCarbs" class="text-base sm:text-lg font-extrabold text-sky-400 mt-0.5">0 г</div>
+                <div id="macroPerOneCarbs" class="text-[10px] tg-hint">энергия</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fastfood Combo Breakdown & Order Lifehacks -->
+          <div id="fastfoodComboSection" class="hidden space-y-4">
+            <div>
+              <h3 class="text-xs font-bold uppercase tracking-wider tg-hint mb-2">🍔 Состав комбо-сета по позициям</h3>
+              <div id="comboItemsList" class="space-y-2"></div>
+            </div>
+            <div class="rounded-2xl p-3.5 bg-amber-500/10 border border-amber-500/30">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">💡 Лайфхаки при заказе на кассе / в киоске</h4>
+              <ul id="orderHacksList" class="space-y-1.5 text-xs leading-relaxed"></ul>
+            </div>
+          </div>
+
+          <!-- INLINE EMBEDDED VIDEO PLAYER (Plays Directly Inside the App Without Leaving) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider tg-hint">🎬 Видео приготовления (прямо в приложении)</h3>
+                <p id="videoTypeSubtitle" class="text-[11px] text-emerald-400">Встроенный плеер без перехода во внешний браузер</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="modeVideoPlayerBtn" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500 text-white transition">▶ Видео</button>
+                <button id="modeStepGuideBtn" type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-500/15 tg-hint transition">📋 Пошагово</button>
+              </div>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border border-slate-500/25 bg-slate-950 shadow-inner">
+              <!-- Direct Inline Video Container (Shown immediately by default!) -->
+              <div id="embeddedMediaContainer" class="aspect-video w-full bg-black relative"></div>
+
+              <!-- Optional Interactive Step Visual Player (if user switches to "Пошагово") -->
+              <div id="videoPlayerWrapper" class="hidden relative aspect-video w-full bg-slate-900 flex flex-col justify-between p-4">
+                <div class="flex items-center justify-between z-10">
+                  <span id="playerStepPill" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Шаг 1</span>
+                  <span id="videoDurationLabel" class="text-[11px] text-slate-400"></span>
+                </div>
+
+                <div class="my-auto text-center px-3 z-10">
+                  <div id="playerEmojiStage" class="text-4xl sm:text-5xl mb-2 transition-transform duration-300">🍳</div>
+                  <p id="playerStepCaption" class="text-xs sm:text-sm font-semibold text-white max-w-md mx-auto leading-snug"></p>
+                  <p id="playerStepTimer" class="text-[11px] text-emerald-400 font-mono mt-1"></p>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 z-10">
+                  <button id="prevStepBtn" type="button" class="px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition">← Пред.</button>
+                  <button id="playStepsBtn" type="button" class="flex-1 py-1.5 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition">▶ Авто-листание шагов</button>
+                  <button id="nextStepBtn" type="button" class="px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition">След. →</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Numbered Steps -->
+            <ol id="stepsList" class="space-y-2"></ol>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Custom Recipe Modal (Supports Multi-Goals, Multi-Meals, Inline Video & Auto-Multiplier) -->
+  <div id="addRecipeModal" class="fixed inset-0 z-50 hidden">
+    <div id="addRecipeBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
+    <div class="relative z-10 flex flex-col justify-end min-h-screen pointer-events-none">
+      <div class="pointer-events-auto w-full max-w-xl mx-auto tg-card rounded-t-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-slide-up">
+        <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-500/15">
+          <div>
+            <h3 class="text-base font-extrabold">＋ Добавить свой рецепт</h3>
+            <p class="text-[11px] tg-hint">Выбирай сразу несколько разделов (например, Сушка + Поддержка) и вставляй ссылку на видео</p>
+          </div>
+          <button id="closeAddRecipeBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold">✕</button>
+        </div>
+
+        <form id="addRecipeForm" class="p-4 overflow-y-auto space-y-3.5 flex-1 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="sm:col-span-2">
+              <label class="block font-bold mb-1 tg-hint">Название блюда</label>
+              <input id="newTitle" type="text" required placeholder="Напр.: Куриные котлеты с сыром в духовке" class="w-full tg-card rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <div>
+              <label class="block font-bold mb-1 tg-hint">Вкладка</label>
+              <select id="newCategory" class="w-full tg-card rounded-xl px-3 py-2 text-xs focus:outline-none">
+                <option value="home">🍳 Домашняя кухня</option>
+                <option value="fastfood">🍔 Фастфуд-хак</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Multi-Select Goals (Можно выбрать сразу Сушка + Поддержка и т.д.) -->
+          <div>
+            <label class="block font-bold mb-1.5 tg-hint">🎯 В какие разделы по цели добавить? (можно выбрать несколько)</label>
+            <div class="flex flex-wrap gap-2" id="newGoalsCheckboxGroup">
+              <label class="tg-card px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" name="newGoalItem" value="Сушка" checked class="accent-emerald-500 w-4 h-4" />
+                <span class="font-bold">🔥 Сушка</span>
+              </label>
+              <label class="tg-card px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" name="newGoalItem" value="Поддержка" checked class="accent-emerald-500 w-4 h-4" />
+                <span class="font-bold">⚖️ Поддержка</span>
+              </label>
+              <label class="tg-card px-3 py-2 rounded-xl flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" name="newGoalItem" value="Набор массы" class="accent-emerald-500 w-4 h-4" />
+                <span class="font-bold">💪 Набор массы</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Multi-Select Meals + Time -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="sm:col-span-2">
+              <label class="block font-bold mb-1.5 tg-hint">🍽 Приёмы пищи (можно выбрать несколько)</label>
+              <div class="flex flex-wrap gap-1.5" id="newMealsCheckboxGroup">
+                <label class="tg-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer select-none">
+                  <input type="checkbox" name="newMealItem" value="Завтрак" class="accent-emerald-500 w-3.5 h-3.5" />
+                  <span>🌅 Завтрак</span>
+                </label>
+                <label class="tg-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer select-none">
+                  <input type="checkbox" name="newMealItem" value="Обед" checked class="accent-emerald-500 w-3.5 h-3.5" />
+                  <span>☀️ Обед</span>
+                </label>
+                <label class="tg-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer select-none">
+                  <input type="checkbox" name="newMealItem" value="Ужин" checked class="accent-emerald-500 w-3.5 h-3.5" />
+                  <span>🌙 Ужин</span>
+                </label>
+                <label class="tg-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer select-none">
+                  <input type="checkbox" name="newMealItem" value="Перекус" class="accent-emerald-500 w-3.5 h-3.5" />
+                  <span>🥤 Перекус</span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold mb-1.5 tg-hint">⏱ Время (минут)</label>
+              <input id="newTimeMinutes" type="number" min="1" value="20" class="w-full tg-card rounded-xl px-3 py-2 text-xs font-bold" />
+            </div>
+          </div>
+
+          <!-- Base Servings & KBZHU -->
+          <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label class="font-extrabold text-emerald-400">На сколько порций ты сейчас вписываешь граммовки?</label>
+              <div class="flex items-center gap-1.5">
+                <input id="newBaseServings" type="number" min="1" max="50" value="1" class="w-16 tg-card rounded-xl px-2.5 py-1.5 text-center font-extrabold text-emerald-400" />
+                <span class="tg-hint font-semibold">порц.</span>
+              </div>
+            </div>
+            <p class="text-[11px] tg-hint">Если впишешь на 1 порцию — при нажатии «5 порций» бот сам умножит каждый ингредиент на 5.</p>
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <span class="tg-hint font-semibold">КБЖУ ниже указано:</span>
+              <select id="newMacroMode" class="tg-card rounded-xl px-2.5 py-1.5 text-xs font-bold">
+                <option value="per_portion">За 1 порцию</option>
+                <option value="total_batch">За весь объём (разделить на порции)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 pt-1">
+              <div>
+                <label class="block text-[10px] tg-hint mb-0.5">Ккал</label>
+                <input id="newKcal" type="number" required placeholder="480" class="w-full tg-card rounded-xl px-2.5 py-1.5 font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] tg-hint mb-0.5">Белки (г)</label>
+                <input id="newProtein" type="number" required placeholder="50" class="w-full tg-card rounded-xl px-2.5 py-1.5 font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] tg-hint mb-0.5">Жиры (г)</label>
+                <input id="newFat" type="number" required placeholder="11" class="w-full tg-card rounded-xl px-2.5 py-1.5 font-bold" />
+              </div>
+              <div>
+                <label class="block text-[10px] tg-hint mb-0.5">Угли (г)</label>
+                <input id="newCarbs" type="number" required placeholder="45" class="w-full tg-card rounded-xl px-2.5 py-1.5 font-bold" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold mb-1 tg-hint">🎬 Ссылка на видео (YouTube / Shorts / VK / прямая ссылка на .mp4)</label>
+            <input id="newVideoUrl" type="text" placeholder="https://www.youtube.com/watch?v=... или ./video.mp4" class="w-full tg-card rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+
+          <div>
+            <label class="block font-bold mb-1 tg-hint">Ингредиенты (по одному на строке: Название | Количество | Ед. изм.)</label>
+            <textarea id="newIngredientsText" rows="4" required placeholder="Филе грудки | 200 | г&#10;Рис сухой | 70 | г&#10;Йогурт греческий | 50 | г" class="w-full tg-card rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block font-bold mb-1 tg-hint">Шаги приготовления (по одному шагу на строке)</label>
+            <textarea id="newStepsText" rows="3" placeholder="Нарезать филе и замариновать в специях&#10;Запечь 20 минут при 200 градусах" class="w-full tg-card rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div class="pt-2 flex items-center justify-end gap-2">
+            <button id="exportJsonBtn" type="button" class="px-3 py-2.5 rounded-xl bg-sky-500/15 text-sky-400 font-bold hover:bg-sky-500/25 transition">Скопировать JSON</button>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">Сохранить в каталог</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-200 bg-slate-900/95 text-white border border-emerald-500/40 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold flex items-center gap-2">
+    <span class="text-emerald-400">✓</span>
+    <span id="toastText">Скопировано в буфер обмена</span>
+  </div>
+
+  <script>
+    /********************************************************************
+     * 1. БАЗА ДАННЫХ РЕЦЕПТОВ С ПОДДЕРЖКОЙ НЕСКОЛЬКИХ РАЗДЕЛОВ (МАССИВЫ ТЕГОВ)
+     *
+     * Теперь у каждого блюда:
+     * - goals: ["Сушка", "Поддержка"] — массив целей! Блюдо покажется и в фильтре «Сушка», и в фильтре «Поддержка».
+     * - meals: ["Обед", "Ужин"] — массив приёмов пищи!
+     * - baseServings: 1 (или любое число X). Когда ты нажимаешь «5 порций», бот сам умножает каждый ингредиент на 5!
+     * - videoUrl: встроенный плеер открывается СРАЗУ внутри карточки блюда без ухода из Telegram.
+     ********************************************************************/
+    const DEFAULT_RECIPES_DATA = [
+      {
+        id: "shrimp-protein-pasta",
+        category: "home",
+        title: "Сливочно-чесночная паста с королевскими креветками",
+        subtitle: "Ресторанная паста без жирных сливок: подходит и на сушку, и на поддержку (52 г белка на порцию)",
+        chain: null,
+        goals: ["Сушка", "Поддержка"],
+        meals: ["Обед", "Ужин"],
+        timeCategory: "Средне",
+        timeMinutes: 18,
+        emoji: "🍤",
+        gradient: "linear-gradient(135deg, #0f766e 0%, #0369a1 55%, #1e1b4b 100%)",
+        baseServings: 1,
+        macrosMode: "per_portion",
+        macros: {
+          kcal: 495,
+          protein: 52,
+          fat: 9,
+          carbs: 51
+        },
+        // Прямой встроенный видеоролик (открывается прямо в плеере приложения)
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        videoDuration: "00:15",
+        ingredients: [
+          { name: "Королевские креветки очищенные (сырые)", amount: 220, unit: "г", aisle: "Морепродукты" },
+          { name: "Паста из твёрдых сортов (сухой вес)", amount: 65, unit: "г", aisle: "Бакалея" },
+          { name: "Греческий йогурт 2% (Teos / ВкусВилл)", amount: 75, unit: "г", aisle: "Молочный отдел" },
+          { name: "Пармезан тёртый легкий", amount: 15, unit: "г", aisle: "Сыры" },
+          { name: "Чеснок свежий", amount: 8, unit: "г", aisle: "Овощи" },
+          { name: "Томаты черри", amount: 80, unit: "г", aisle: "Овощи" },
+          { name: "Оливковое масло", amount: 4, unit: "мл", aisle: "Бакалея" }
+        ],
+        steps: [
+          { title: "Отвари пасту до состояния Al Dente (на 1 минуту меньше инструкции) и сохрани 60 мл крахмальной воды.", duration: "8 мин", emoji: "🍝" },
+          { title: "На сухой антипригарной сковороде с каплей масла обжарь раздавленный чеснок и половинки черри 2 минуты.", duration: "2 мин", emoji: "🧄" },
+          { title: "Выложи креветки, обжаривай по 90 секунд с каждой стороны со щепоткой копчёной паприки.", duration: "3 мин", emoji: "🍤" },
+          { title: "Сними сковороду с сильного огня, влей воду от пасты, добавь греческий йогурт и пармезан — интенсивно перемешай с пастой.", duration: "2 мин", emoji: "🧀" }
+        ]
+      },
+      {
+        id: "tandoori-chicken-bake",
+        category: "home",
+        title: "Сочное куриное филе в йогуртово-горчичном маринаде",
+        subtitle: "Универсальная заготовка в контейнеры: 58 г чистого белка и минимум жиров",
+        chain: null,
+        goals: ["Сушка", "Поддержка"],
+        meals: ["Обед", "Ужин"],
+        timeCategory: "Долго",
+        timeMinutes: 35,
+        emoji: "🍗",
+        gradient: "linear-gradient(135deg, #065f46 0%, #047857 50%, #0f172a 100%)",
+        baseServings: 1,
+        macrosMode: "per_portion",
+        macros: {
+          kcal: 410,
+          protein: 58,
+          fat: 7,
+          carbs: 28
+        },
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        videoDuration: "00:15",
+        ingredients: [
+          { name: "Филе куриной грудки (сырое)", amount: 240, unit: "г", aisle: "Птица и мясо" },
+          { name: "Греческий йогурт 2% для маринада", amount: 60, unit: "г", aisle: "Молочный отдел" },
+          { name: "Дижонская зернистая горчица", amount: 12, unit: "г", aisle: "Соусы" },
+          { name: "Бэби-картофель молодой", amount: 150, unit: "г", aisle: "Овощи" },
+          { name: "Соевый соус натурального брожения", amount: 15, unit: "мл", aisle: "Соусы" },
+          { name: "Смесь копчёной паприки и сухого чеснока", amount: 5, unit: "г", aisle: "Специи" }
+        ],
+        steps: [
+          { title: "Сделай надрезы ромбиком на курином филе, чтобы маринад проник глубоко в волокна.", duration: "3 мин", emoji: "🔪" },
+          { title: "Смешай йогурт, дижонскую горчицу, соевый соус и паприку. Обмажь грудку и половинки бэби-картофеля.", duration: "5 мин", emoji: "🥣" },
+          { title: "Запекай в разогретой до 200°C духовке (или аэрогриле) ровно 22–25 минут, чтобы не пересушить мясо.", duration: "24 мин", emoji: "🔥" },
+          { title: "Дай филе «отдохнуть» под фольгой 3 минуты перед нарезкой — все мясные соки останутся внутри.", duration: "3 мин", emoji: "✨" }
+        ]
+      },
+      {
+        id: "beef-teriyaki-mass-bowl",
+        category: "home",
+        title: "Сытный мясной боул с говядиной Терияки, рисом и яйцом",
+        subtitle: "Плотный приём пищи для качественного набора мышечной массы и активной поддержки",
+        chain: null,
+        goals: ["Набор массы", "Поддержка"],
+        meals: ["Обед", "Ужин"],
+        timeCategory: "Средне",
+        timeMinutes: 22,
+        emoji: "🥩",
+        gradient: "linear-gradient(135deg, #7c2d12 0%, #9a3412 50%, #1e1b4b 100%)",
+        baseServings: 1,
+        macrosMode: "per_portion",
+        macros: {
+          kcal: 865,
+          protein: 56,
+          fat: 26,
+          carbs: 98
+        },
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        videoDuration: "01:00",
+        ingredients: [
+          { name: "Постная говяжья вырезка / фарш 90/10", amount: 190, unit: "г", aisle: "Птица и мясо" },
+          { name: "Рис Жасмин или Басмати (сухой вес)", amount: 100, unit: "г", aisle: "Бакалея" },
+          { name: "Яйцо куриное С0", amount: 1, unit: "шт", aisle: "Яйца" },
+          { name: "Авокадо Хасс спелое", amount: 60, unit: "г", aisle: "Овощи" },
+          { name: "Соус Терияки густой", amount: 30, unit: "г", aisle: "Соусы" },
+          { name: "Кунжутное масло и семена кунжута", amount: 7, unit: "г", aisle: "Специи" }
+        ],
+        steps: [
+          { title: "Промой рис Жасмин до прозрачной воды и свари в пропорции 1:1.5 под плотной крышкой.", duration: "12 мин", emoji: "🍚" },
+          { title: "Обжарь говядину на раскалённой сковороде 5–6 минут, в конце влей соус Терияки и карамелизуй 1 минуту.", duration: "6 мин", emoji: "🥩" },
+          { title: "Рядом поджарь яйцо глазунью с жидким желтком и нарежь ломтиками спелое авокадо.", duration: "3 мин", emoji: "🍳" },
+          { title: "Собери боул: подушка из риса, сверху говядина, авокадо, глазунья и щепотка кунжута.", duration: "1 мин", emoji: "🥢" }
+        ]
+      },
+      {
+        id: "turbo-tortilla-scramble",
+        category: "home",
+        title: "Турбо-тортилья с тунцом, яйцами и моцареллой за 8 минут",
+        subtitle: "Белковый завтрак или быстрый перекус на одной сковороде (подходит во все 3 цели)",
+        chain: null,
+        goals: ["Сушка", "Поддержка", "Набор массы"],
+        meals: ["Завтрак", "Перекус"],
+        timeCategory: "Быстро",
+        timeMinutes: 8,
+        emoji: "🌮",
+        gradient: "linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #0f172a 100%)",
+        baseServings: 1,
+        macrosMode: "per_portion",
+        macros: {
+          kcal: 470,
+          protein: 44,
+          fat: 16,
+          carbs: 36
+        },
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoy.mp4",
+        videoDuration: "00:15",
+        ingredients: [
+          { name: "Пшеничная или цельнозерновая тортилья (65 г)", amount: 1, unit: "шт", aisle: "Хлеб" },
+          { name: "Тунец в собственном соку (чистый вес)", amount: 90, unit: "г", aisle: "Консервы" },
+          { name: "Яйца куриные С1", amount: 2, unit: "шт", aisle: "Яйца" },
+          { name: "Сыр Моцарелла light тёртый", amount: 30, unit: "г", aisle: "Сыры" },
+          { name: "Шпинат свежий или микс салата", amount: 30, unit: "г", aisle: "Овощи" }
+        ],
+        steps: [
+          { title: "Взбей 2 яйца вилкой со щепоткой соли и вылей на разогретую антипригарную сковороду.", duration: "2 мин", emoji: "🥚" },
+          { title: "Пока яйца сверху ещё жидкие, накрой их лепёшкой-тортильей и слегка прижми ладонью.", duration: "1 мин", emoji: "🫓" },
+          { title: "Переверни блин лопаткой (тортильей вниз), выложи на половину размятый тунец, моцареллу и шпинат.", duration: "3 мин", emoji: "🧀" },
+          { title: "Сложи пополам как кесадилью, подержи по 1 минуте с каждой стороны до хрустящей корочки.", duration: "2 мин", emoji: "🔥" }
+        ]
+      },
+      {
+        id: "rostics-shrimp-boxmaster-hack",
+        category: "fastfood",
+        title: "Ростикс (KFC) Комбо: Боксмастер + Креветки (50 г белка)",
+        subtitle: "Готовый сет из Ростикс с полноценным горячим роллом и 50 г белка всего на 615 ккал",
+        chain: "Ростикс / KFC",
+        goals: ["Сушка", "Поддержка"],
+        meals: ["Обед", "Ужин"],
+        timeCategory: "Быстро",
+        timeMinutes: 7,
+        emoji: "🌯",
+        gradient: "linear-gradient(135deg, #be123c 0%, #e11d48 50%, #1e1b4b 100%)",
+        baseServings: 1,
+        macrosMode: "per_portion",
+        macros: {
+          kcal: 615,
+          protein: 50,
+          fat: 21,
+          carbs: 56
+        },
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+        videoDuration: "00:15",
+        comboBreakdown: [
+          { item: "Боксмастер оригинальный (кастом: БЕЗ майонезного соуса и БЕЗ хашбрауна)", kcal: 425, protein: 34, fat: 13, carbs: 43 },
+          { item: "Королевские креветки 5 шт. (без жирного сырного соуса)", kcal: 175, protein: 15, fat: 8, carbs: 11 },
+          { item: "Соус Томатный кетчуп порционный + Напиток Черноголовка Кола Без Сахара 0.4 л", kcal: 15, protein: 1, fat: 0, carbs: 2 }
+        ],
+        orderHacks: [
+          "В киоске самообслуживания открой «Изменить состав» у Боксмастера и убери майонезный соус (-110 ккал чистых жиров) и картофельный хашбраун (-135 ккал).",
+          "Вместо картошки фри бери порцию креветок (или 2 стрипса оригинальных) — это поднимает белок сета до 50 г.",
+          "Вместо Сырного соуса (170 ккал на ванночку!) возьми Томатный кетчуп или кисло-сладкий соус (всего 15–35 ккал)."
+        ],
+        ingredients: [
+          { name: "Боксмастер оригинальный (убрать соус и хашбраун)", amount: 1, unit: "шт", aisle: "Киоск Ростикс" },
+          { name: "Креветки в панировке (порция 5 шт.)", amount: 1, unit: "порц", aisle: "Киоск Ростикс" },
+          { name: "Кетчуп томатный порционный", amount: 1, unit: "шт", aisle: "Соусы" },
+          { name: "Кола Zero / Американо без сахара", amount: 400, unit: "мл", aisle: "Напитки" }
+        ],
+        steps: [
+          { title: "В терминале Ростикс выбери Боксмастер оригинальный → нажми кнопку «Настроить ингредиенты».", duration: "2 мин", emoji: "📱" },
+          { title: "Сними галочки с «Соус майонезный» и «Картофельный оладушек (хашбраун)». За счет куриного филе и сыра внутри ролл останется сочным.", duration: "1 мин", emoji: "✂️" },
+          { title: "Добавь в корзину 5 креветок и томатный кетчуп, напиток замени на Zero.", duration: "2 мин", emoji: "🥤" }
+        ]
+      },
+      {
+        id: "vkusno-double-hit-protein-hack",
+        category: "fastfood",
+        title: "Вкусно — и точка: Двойной Чизбургер + Наггетсы (47 г белка)",
+        subtitle: "Идеальный баланс БЖУ с настоящим бургером с двумя говяжьими котлетами на 640 ккал",
+        chain: "Вкусно — и точка",
+        goals: ["Поддержка", "Сушка", "Набор массы"],
+        meals: ["Обед", "Ужин", "Перекус"],
+        timeCategory: "Быстро",
+        timeMinutes: 6,
+        emoji: "🍔",
+        gradient: "linear-gradient(135deg, #d97706 0%, #ea580c 50%, #1e1b4b 100%)",
+        baseServings: 1,
+        macrosMode: "per_portion",
+        macros: {
+          kcal: 640,
+          protein: 47,
+          fat: 31,
+          carbs: 43
+        },
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        videoDuration: "00:15",
+        comboBreakdown: [
+          { item: "Двойной Чизбургер (2 рубленые говяжьи котлеты + 2 ломтика чеддера, кетчуп и горчица)", kcal: 442, protein: 27, fat: 23, carbs: 32 },
+          { item: "Наггетсы куриные (порция 4 шт.) или Стрипсы (3 шт.)", kcal: 178, protein: 19, fat: 8, carbs: 9 },
+          { item: "Горчичный или Кисло-сладкий соус (половина порции) + Добрый Кола Без Сахара", kcal: 20, protein: 1, fat: 0, carbs: 2 }
+        ],
+        orderHacks: [
+          "Двойной Чизбургер — чемпион сети по соотношению белка к калориям, так как заправляется кетчупом и горчицей, а не жирным майонезом (как в Биг Спешиал на 850 ккал).",
+          "Хочешь урезать ещё 65 ккал на сушке? В киоске нажми «Убрать 1 ломтик сыра» или съешь бургер без нижней булочки.",
+          "Никогда не бери картофель фри в комбо: замени его на 4 наггетса или морковные палочки с Колой Без Сахара."
+        ],
+        ingredients: [
+          { name: "Двойной Чизбургер (классический)", amount: 1, unit: "шт", aisle: "Киоск Вкусно и точка" },
+          { name: "Наггетсы 4 шт. (или 3 стрипса)", amount: 1, unit: "порц", aisle: "Киоск Вкусно и точка" },
+          { name: "Кисло-сладкий соус", amount: 1, unit: "шт", aisle: "Соусы" },
+          { name: "Добрый Кола Без Сахара 0.4 л", amount: 400, unit: "мл", aisle: "Напитки" }
+        ],
+        steps: [
+          { title: "Заказывай позиции по отдельности (не стандартным Комбо с картошкой), чтобы не переплачивать за лишние 350 ккал из фритюра.", duration: "2 мин", emoji: "🧾" },
+          { title: "Добавь Двойной Чизбургер и маленькую порцию наггетсов (4 шт.) или 3 куриных стрипса.", duration: "2 мин", emoji: "🍔" },
+          { title: "Выбери напиток без сахара — получаешь 47 г полноценного животного белка за 640 ккал.", duration: "1 мин", emoji: "✅" }
+        ]
+      }
+    ];
+
+    /********************************************************************
+     * 2. СОСТОЯНИЕ И НОРМАЛИЗАЦИЯ МНОЖЕСТВЕННЫХ ТЕГОВ (GOALS & MEALS)
+     ********************************************************************/
+    const state = {
+      activeCategory: "home",
+      filters: {
+        goal: "all",
+        time: "all",
+        meal: "all"
+      },
+      searchQuery: "",
+      currentRecipeId: null,
+      portions: 5,
+      activeStepIndex: 0,
+      stepIntervalId: null,
+      lightMode: false,
+      customRecipes: []
+    };
+
+    // Нормализует поле goals: поддерживает и старую строку goal: "Сушка", и новый массив goals: ["Сушка", "Поддержка"]
+    function getRecipeGoals(recipe) {
+      if (Array.isArray(recipe.goals) && recipe.goals.length > 0) return recipe.goals;
+      if (recipe.goal) return [recipe.goal];
+      return ["Поддержка"];
+    }
+
+    // Нормализует поле meals: поддерживает и старую строку meal: "Обед", и новый массив meals: ["Обед", "Ужин"]
+    function getRecipeMeals(recipe) {
+      if (Array.isArray(recipe.meals) && recipe.meals.length > 0) return recipe.meals;
+      if (recipe.meal) return [recipe.meal];
+      return ["Обед"];
+    }
+
+    function getAllRecipes() {
+      return [...state.customRecipes, ...DEFAULT_RECIPES_DATA];
+    }
+
+    function loadCustomRecipes() {
+      try {
+        const raw = localStorage.getItem("fitmacro_custom_recipes_v2");
+        if (raw) {
+          state.customRecipes = JSON.parse(raw) || [];
+        }
+      } catch (e) {
+        state.customRecipes = [];
+      }
+    }
+
+    function saveCustomRecipes() {
+      try {
+        localStorage.setItem("fitmacro_custom_recipes_v2", JSON.stringify(state.customRecipes));
+      } catch (e) {}
+    }
+
+    /********************************************************************
+     * 3. АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ГРАММОВОК БОТОМ (УМНОЖЕНИЕ НА ПОРЦИИ)
+     ********************************************************************/
+    function getBaseServings(recipe) {
+      return recipe.baseServings && recipe.baseServings > 0 ? Number(recipe.baseServings) : 1;
+    }
+
+    function getPerPortionMacros(recipe) {
+      const base = getBaseServings(recipe);
+      if (recipe.macrosMode === "total_batch" && base > 1) {
+        return {
+          kcal: Math.round(recipe.macros.kcal / base),
+          protein: Math.round(recipe.macros.protein / base),
+          fat: Math.round(recipe.macros.fat / base),
+          carbs: Math.round(recipe.macros.carbs / base)
+        };
+      }
+      return recipe.macros;
+    }
+
+    function calculateScaledAmount(rawAmount, recipe, targetPortions) {
+      const base = getBaseServings(recipe);
+      const scaled = (Number(rawAmount) / base) * targetPortions;
+      if (Number.isInteger(scaled)) return scaled;
+      return Number(scaled.toFixed(1));
+    }
+
+    /********************************************************************
+     * 4. ВСТРОЕННЫЙ ВИДЕО-ПЛЕЕР (ПРЯМО В ПРИЛОЖЕНИИ БЕЗ ПЕРЕХОДА НА ЮТУБ)
+     ********************************************************************/
+    function parseVideoSource(recipe) {
+      const raw = (recipe.videoUrl || recipe.youtubeId || "").trim();
+      if (!raw) return null;
+
+      // Прямой видеофайл (.mp4, .webm, .mov)
+      if (/\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(raw)) {
+        return { type: "video", src: raw, label: "Встроенное MP4-видео" };
+      }
+
+      // 11-символьный YouTube ID
+      if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) {
+        return {
+          type: "youtube",
+          embedUrl: `https://www.youtube-nocookie.com/embed/${raw}?playsinline=1&rel=0&modestbranding=1`,
+          label: "Встроенный плеер YouTube"
+        };
+      }
+
+      // Любая ссылка YouTube / YouTube Shorts / youtu.be
+      const ytMatch = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (ytMatch && ytMatch[1]) {
+        return {
+          type: "youtube",
+          embedUrl: `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?playsinline=1&rel=0&modestbranding=1`,
+          label: "Встроенный плеер YouTube"
+        };
+      }
+
+      // VK Video / Rutube embed URL или прочий видеофайл
+      if (raw.includes("vk.com/video_ext.php") || raw.includes("rutube.ru/play/embed")) {
+        return { type: "youtube", embedUrl: raw, label: "Встроенный видеоплеер" };
+      }
+
+      return { type: "video", src: raw, label: "Встроенное видео" };
+    }
+
+    function renderInlineVideoPlayer(recipe) {
+      const mediaContainer = document.getElementById("embeddedMediaContainer");
+      const stepWrapper = document.getElementById("videoPlayerWrapper");
+      const subtitleEl = document.getElementById("videoTypeSubtitle");
+      const parsed = parseVideoSource(recipe);
+
+      if (!parsed) {
+        // Если ссылки на видео нет — показываем интерактивный пошаговый экран
+        mediaContainer.classList.add("hidden");
+        mediaContainer.innerHTML = "";
+        stepWrapper.classList.remove("hidden");
+        subtitleEl.textContent = "Пошаговый визуальный режим";
+        return;
+      }
+
+      // Показываем видео сразу внутри приложения!
+      mediaContainer.classList.remove("hidden");
+      stepWrapper.classList.add("hidden");
+      subtitleEl.textContent = `${parsed.label} • воспроизводится прямо здесь`;
+
+      if (parsed.type === "youtube") {
+        mediaContainer.innerHTML = `
+          <iframe
+            class="w-full h-full"
+            src="${parsed.embedUrl}"
+            title="Видео рецепта"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        `;
+      } else {
+        mediaContainer.innerHTML = `
+          <video
+            class="w-full h-full object-cover bg-black"
+            src="${parsed.src}"
+            controls
+            playsinline
+            preload="metadata">
+          </video>
+        `;
+      }
+    }
+
+    /********************************************************************
+     * 5. ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP SDK
+     ********************************************************************/
+    function initTelegramSDK() {
+      const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+      if (!tg) return;
+
+      try {
+        tg.ready();
+        tg.expand();
+
+        if (tg.colorScheme === "light") {
+          state.lightMode = true;
+          document.body.classList.add("light-mode");
+        }
+
+        const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+        if (user && user.first_name) {
+          const greetingEl = document.getElementById("userGreeting");
+          if (greetingEl) {
+            greetingEl.textContent = `Привет, ${user.first_name}! Умножаем граммовки в 1 клик`;
+          }
+        }
+
+        tg.BackButton.onClick(() => {
+          if (!document.getElementById("detailModal").classList.contains("hidden")) {
+            closeDetailModal();
+          } else if (!document.getElementById("addRecipeModal").classList.contains("hidden")) {
+            closeAddRecipeModal();
+          }
+        });
+      } catch (err) {}
+    }
+
+    function triggerHaptic(type = "light") {
+      try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred(type);
+        }
+      } catch (e) {}
+    }
+
+    /********************************************************************
+     * 6. РЕНДЕР КАРТОЧЕК И ФИЛЬТРАЦИЯ ПО НЕСКОЛЬКИМ РАЗДЕЛАМ
+     ********************************************************************/
+    function getDishArtHtml(recipe) {
+      const goals = getRecipeGoals(recipe);
+      const meals = getRecipeMeals(recipe);
+      return `
+        <div class="relative h-36 w-full overflow-hidden flex items-end p-3.5" style="background: ${recipe.gradient || 'linear-gradient(135deg, #059669 0%, #0f172a 100%)'};">
+          <div class="absolute -right-4 -top-4 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+          <div class="absolute right-3 top-2.5 text-5xl select-none drop-shadow-md">${recipe.emoji || "🍲"}</div>
+          <div class="relative z-10 flex flex-wrap items-center gap-1 w-full">
+            ${goals.map(g => `
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-black/55 text-emerald-300 border border-emerald-400/30 backdrop-blur-sm">
+                ${g}
+              </span>
+            `).join("")}
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-white/20 text-white backdrop-blur-sm">
+              ⏱ ${recipe.timeMinutes} мин
+            </span>
+            <span class="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-white/20 text-white backdrop-blur-sm">
+              ${meals.join(" / ")}
+            </span>
+            ${recipe.chain ? `<span class="ml-auto px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-amber-400 text-slate-950">${recipe.chain}</span>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function updateCounts() {
+      const all = getAllRecipes();
+      const homeCount = all.filter(r => r.category === "home").length;
+      const fastfoodCount = all.filter(r => r.category === "fastfood").length;
+      document.getElementById("countHome").textContent = homeCount;
+      document.getElementById("countFastfood").textContent = fastfoodCount;
+    }
+
+    function getFilteredRecipes() {
+      const q = state.searchQuery.trim().toLowerCase();
+      return getAllRecipes().filter(item => {
+        if (item.category !== state.activeCategory) return false;
+
+        const itemGoals = getRecipeGoals(item);
+        const itemMeals = getRecipeMeals(item);
+
+        // Мульти-проверка: если блюдо добавлено в ["Сушка", "Поддержка"], оно отображается в обоих разделах!
+        if (state.filters.goal !== "all" && !itemGoals.includes(state.filters.goal)) return false;
+        if (state.filters.time !== "all" && item.timeCategory !== state.filters.time) return false;
+        if (state.filters.meal !== "all" && !itemMeals.includes(state.filters.meal)) return false;
+
+        if (q) {
+          const inTitle = item.title.toLowerCase().includes(q);
+          const inSub = (item.subtitle || "").toLowerCase().includes(q);
+          const inChain = item.chain && item.chain.toLowerCase().includes(q);
+          const inIng = item.ingredients.some(i => i.name.toLowerCase().includes(q));
+          if (!inTitle && !inSub && !inChain && !inIng) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderFilterChipsUI() {
+      const chips = document.querySelectorAll(".filter-chip");
+      chips.forEach(chip => {
+        const type = chip.getAttribute("data-filter-type");
+        const val = chip.getAttribute("data-value");
+        const isActive = state.filters[type] === val;
+        if (isActive) {
+          chip.className = "filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition bg-emerald-500 text-white shadow-sm";
+        } else {
+          chip.className = "filter-chip shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition bg-slate-500/15 tg-hint hover:opacity-90";
+        }
+      });
+
+      const activeCount = Object.values(state.filters).filter(v => v !== "all").length;
+      const badge = document.getElementById("activeFilterCount");
+      const resetBtn = document.getElementById("resetFiltersBtn");
+      if (activeCount > 0) {
+        badge.textContent = activeCount;
+        badge.classList.remove("hidden");
+        resetBtn.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+        resetBtn.classList.add("hidden");
+      }
+    }
+
+    function renderRecipesGrid() {
+      const grid = document.getElementById("recipesGrid");
+      const emptyState = document.getElementById("emptyState");
+      const fastfoodBanner = document.getElementById("fastfoodBanner");
+
+      if (state.activeCategory === "fastfood") {
+        fastfoodBanner.classList.remove("hidden");
+      } else {
+        fastfoodBanner.classList.add("hidden");
+      }
+
+      const items = getFilteredRecipes();
+      if (items.length === 0) {
+        grid.innerHTML = "";
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+      grid.innerHTML = items.map(recipe => {
+        const m = getPerPortionMacros(recipe);
+        const proteinCaloriePct = Math.round((m.protein * 4 / Math.max(m.kcal, 1)) * 100);
+        return `
+          <article data-recipe-id="${recipe.id}" class="recipe-card tg-card rounded-2xl overflow-hidden flex flex-col justify-between cursor-pointer hover:border-emerald-500/50 transition-all active:scale-[0.99] shadow-sm">
+            <div>
+              ${getDishArtHtml(recipe)}
+              <div class="p-4">
+                <h3 class="text-base font-extrabold leading-snug mb-1">${recipe.title}</h3>
+                <p class="text-xs tg-hint line-clamp-2 mb-3.5">${recipe.subtitle || "Рецепт с авто-умножением граммовок и видео"}</p>
+
+                <!-- Macro Strip (per 1 portion) -->
+                <div class="grid grid-cols-4 gap-1.5 text-center p-2 rounded-xl bg-slate-500/10">
+                  <div>
+                    <div class="text-[10px] tg-hint">Ккал (1п)</div>
+                    <div class="text-xs font-extrabold text-amber-400">${m.kcal}</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] tg-hint">Белки</div>
+                    <div class="text-xs font-extrabold text-emerald-400">${m.protein} г</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] tg-hint">Жиры</div>
+                    <div class="text-xs font-extrabold text-rose-400">${m.fat} г</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] tg-hint">Угли</div>
+                    <div class="text-xs font-extrabold text-sky-400">${m.carbs} г</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 pb-3.5 pt-1 flex items-center justify-between text-xs">
+              <span class="text-[11px] font-semibold text-emerald-400">🎬 Видео внутри • ⚡ ${proteinCaloriePct}% белка</span>
+              <span class="font-bold flex items-center gap-1 text-sky-400">
+                <span>Умножить порции</span>
+                <span>→</span>
+              </span>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    /********************************************************************
+     * 7. МОДАЛКА ДЕТАЛЕЙ, АВТО-УМНОЖЕНИЕ БОТОМ И ВСТРОЕННОЕ ВИДЕО
+     ********************************************************************/
+    function openDetailModal(recipeId) {
+      const recipe = getAllRecipes().find(r => r.id === recipeId);
+      if (!recipe) return;
+
+      triggerHaptic("light");
+      state.currentRecipeId = recipeId;
+      state.portions = 1; // Открываем на 1 порции, чтобы пользователь наглядно нажал «5 порц. (×5)» и увидел умножение
+      state.activeStepIndex = 0;
+      stopStepAutoPlay();
+
+      const goals = getRecipeGoals(recipe);
+      const meals = getRecipeMeals(recipe);
+
+      const isCustom = state.customRecipes.some(r => r.id === recipe.id);
+      document.getElementById("deleteCustomRecipeBtn").classList.toggle("hidden", !isCustom);
+
+      document.getElementById("modalCategoryBadge").textContent =
+        recipe.category === "fastfood" ? `🍔 ${recipe.chain || "Фастфуд-хак"}` : `🍳 ${goals.join(" + ")}`;
+      document.getElementById("modalTimeBadge").textContent = `⏱ ${recipe.timeMinutes} мин • ${meals.join(", ")}`;
+
+      const hero = document.getElementById("modalHeroVisual");
+      hero.style.background = recipe.gradient || "linear-gradient(135deg, #059669 0%, #0f172a 100%)";
+      document.getElementById("modalTitle").textContent = `${recipe.emoji || "🍲"} ${recipe.title}`;
+      document.getElementById("modalSubtitle").textContent = recipe.subtitle || "";
+
+      const base = getBaseServings(recipe);
+      document.getElementById("baseServingsHint").textContent =
+        base === 1 ? "на 1 порцию" : `на ${base} порц.`;
+
+      document.getElementById("modalTagsRow").innerHTML = `
+        ${goals.map(g => `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500 text-white">${g}</span>`).join("")}
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/20 text-white">${recipe.timeCategory} (${recipe.timeMinutes} мин)</span>
+        ${meals.map(m => `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/30 text-sky-200">${m}</span>`).join("")}
+      `;
+
+      document.getElementById("videoDurationLabel").textContent = recipe.videoDuration ? `Тайминг: ${recipe.videoDuration}` : "";
+
+      const ffSection = document.getElementById("fastfoodComboSection");
+      if (recipe.category === "fastfood" && recipe.comboBreakdown) {
+        ffSection.classList.remove("hidden");
+        document.getElementById("orderHacksList").innerHTML = (recipe.orderHacks || []).map(hack => `
+          <li class="flex items-start gap-2">
+            <span class="text-amber-400 font-bold">•</span>
+            <span>${hack}</span>
+          </li>
+        `).join("");
+      } else {
+        ffSection.classList.add("hidden");
+      }
+
+      // Сразу монтируем встроенное видео внутри модалки!
+      renderInlineVideoPlayer(recipe);
+      setPlayerTabUI("video");
+
+      updateModalDynamicContent();
+
+      const modal = document.getElementById("detailModal");
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+
+      try {
+        if (window.Telegram && window.Telegram.WebApp) {
+          window.Telegram.WebApp.BackButton.show();
+        }
+      } catch (e) {}
+    }
+
+    function setPlayerTabUI(mode) {
+      const videoBtn = document.getElementById("modeVideoPlayerBtn");
+      const stepBtn = document.getElementById("modeStepGuideBtn");
+      const mediaContainer = document.getElementById("embeddedMediaContainer");
+      const stepWrapper = document.getElementById("videoPlayerWrapper");
+
+      if (mode === "video") {
+        videoBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500 text-white transition";
+        stepBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-500/15 tg-hint transition";
+        mediaContainer.classList.remove("hidden");
+        stepWrapper.classList.add("hidden");
+      } else {
+        stepBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500 text-white transition";
+        videoBtn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-500/15 tg-hint transition";
+        mediaContainer.classList.add("hidden");
+        stepWrapper.classList.remove("hidden");
+      }
+    }
+
+    function updateModalDynamicContent() {
+      const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+      if (!recipe) return;
+
+      const p = Math.max(1, Number(state.portions) || 1);
+      document.getElementById("customPortionsInput").value = p;
+
+      document.querySelectorAll(".portion-btn").forEach(btn => {
+        const btnP = Number(btn.getAttribute("data-portions"));
+        if (btnP === p) {
+          btn.className = "portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition bg-emerald-500 text-white shadow-md scale-[1.03]";
+        } else {
+          btn.className = "portion-btn py-2 px-2 rounded-xl text-xs font-extrabold transition tg-card hover:opacity-90";
+        }
+      });
+
+      const perOne = getPerPortionMacros(recipe);
+      const totalKcal = perOne.kcal * p;
+      const totalProt = perOne.protein * p;
+      const totalFat = perOne.fat * p;
+      const totalCarbs = perOne.carbs * p;
+
+      document.getElementById("macroMultiplierLabel").textContent =
+        p === 1 ? "(на 1 порцию)" : `(суммарно на ${p} порц.)`;
+      document.getElementById("macroKcal").textContent = totalKcal;
+      document.getElementById("macroProtein").textContent = `${totalProt} г`;
+      document.getElementById("macroFat").textContent = `${totalFat} г`;
+      document.getElementById("macroCarbs").textContent = `${totalCarbs} г`;
+
+      document.getElementById("macroPerOneKcal").textContent = p > 1 ? `${perOne.kcal} ккал × ${p}` : "ккал";
+      document.getElementById("macroPerOneProtein").textContent = p > 1 ? `${perOne.protein} г × ${p}` : "мышцы";
+      document.getElementById("macroPerOneFat").textContent = p > 1 ? `${perOne.fat} г × ${p}` : "гормоны";
+      document.getElementById("macroPerOneCarbs").textContent = p > 1 ? `${perOne.carbs} г × ${p}` : "энергия";
+
+      const protPct = Math.round((perOne.protein * 4 / Math.max(perOne.kcal, 1)) * 100);
+      document.getElementById("proteinRatioBadge").textContent = `Белковый индекс: ${protPct}%`;
+
+      if (recipe.category === "fastfood" && recipe.comboBreakdown) {
+        document.getElementById("comboItemsList").innerHTML = recipe.comboBreakdown.map(c => `
+          <div class="tg-card rounded-xl p-3 flex items-center justify-between gap-3">
+            <div class="text-xs font-semibold leading-snug">${c.item} ${p > 1 ? `<span class="text-emerald-400 font-bold">×${p}</span>` : ""}</div>
+            <div class="shrink-0 text-right">
+              <div class="text-xs font-extrabold text-amber-400">${c.kcal * p} ккал</div>
+              <div class="text-[10px] tg-hint">Б:${c.protein * p}г • Ж:${c.fat * p}г • У:${c.carbs * p}г</div>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      // Наглядная формула умножения ботом: показывает 1 порцию × N = Итого
+      document.getElementById("multiplierFormulaHint").textContent =
+        p === 1
+          ? "Сейчас показана норма на 1 порцию (нажми «5 порц.», чтобы умножить всё на 5)"
+          : `Бот умножил каждый ингредиент на ×${p} порц.:`;
+
+      const listEl = document.getElementById("ingredientsListContainer");
+      listEl.innerHTML = recipe.ingredients.map((ing) => {
+        const perSinglePortion = calculateScaledAmount(ing.amount, recipe, 1);
+        const totalForPortions = calculateScaledAmount(ing.amount, recipe, p);
+        return `
+          <div class="tg-card rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-xs font-bold truncate">${ing.name}</div>
+              <div class="text-[11px] tg-hint">
+                ${p > 1
+                  ? `<span class="text-emerald-400 font-semibold">${perSinglePortion} ${ing.unit} × ${p} порц.</span>`
+                  : `${ing.aisle || "На 1 порцию"}`}
+              </div>
+            </div>
+            <span class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              ${totalForPortions} ${ing.unit}
+            </span>
+          </div>
+        `;
+      }).join("");
+
+      renderStepsAndPlayer(recipe);
+    }
+
+    function renderStepsAndPlayer(recipe) {
+      const steps = recipe.steps && recipe.steps.length > 0
+        ? recipe.steps
+        : [{ title: "Подготовь все ингредиенты по списку выше и приготовь блюдо.", duration: `${recipe.timeMinutes} мин`, emoji: "🍳" }];
+      const step = steps[state.activeStepIndex] || steps[0];
+      document.getElementById("playerStepPill").textContent = `Шаг ${state.activeStepIndex + 1} из ${steps.length}`;
+      document.getElementById("playerEmojiStage").textContent = step.emoji || "🍳";
+      document.getElementById("playerStepCaption").textContent = step.title;
+      document.getElementById("playerStepTimer").textContent = `⏱ Ориентир шага: ${step.duration || "2 мин"}`;
+
+      const stepsListEl = document.getElementById("stepsList");
+      stepsListEl.innerHTML = steps.map((s, idx) => {
+        const active = idx === state.activeStepIndex;
+        return `
+          <li data-step-idx="${idx}" class="step-item tg-card rounded-xl p-3 flex items-start gap-3 cursor-pointer transition ${active ? "ring-2 ring-emerald-500/70 bg-emerald-500/10" : "hover:opacity-90"}">
+            <span class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-xs font-extrabold ${active ? "bg-emerald-500 text-white" : "bg-slate-500/20 tg-hint"}">
+              ${idx + 1}
+            </span>
+            <div class="flex-1 text-xs leading-relaxed">
+              <div class="font-medium">${s.title}</div>
+              <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">${s.emoji || "🔥"} ${s.duration || ""}</div>
+            </div>
+          </li>
+        `;
+      }).join("");
+    }
+
+    function stopStepAutoPlay() {
+      if (state.stepIntervalId) {
+        clearInterval(state.stepIntervalId);
+        state.stepIntervalId = null;
+      }
+      const playBtn = document.getElementById("playStepsBtn");
+      if (playBtn) {
+        playBtn.textContent = "▶ Авто-листание шагов";
+      }
+    }
+
+    function toggleStepAutoPlay() {
+      const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+      if (!recipe || !recipe.steps || recipe.steps.length === 0) return;
+
+      if (state.stepIntervalId) {
+        stopStepAutoPlay();
+        return;
+      }
+
+      const playBtn = document.getElementById("playStepsBtn");
+      playBtn.textContent = "⏸ Пауза";
+      state.stepIntervalId = setInterval(() => {
+        state.activeStepIndex = (state.activeStepIndex + 1) % recipe.steps.length;
+        renderStepsAndPlayer(recipe);
+      }, 2800);
+    }
+
+    function closeDetailModal() {
+      stopStepAutoPlay();
+      document.getElementById("embeddedMediaContainer").innerHTML = "";
+      document.getElementById("detailModal").classList.add("hidden");
+      document.body.style.overflow = "";
+      try {
+        if (window.Telegram && window.Telegram.WebApp) {
+          window.Telegram.WebApp.BackButton.hide();
+        }
+      } catch (e) {}
+    }
+
+    /********************************************************************
+     * 8. КОНСТРУКТОР СВОЕГО РЕЦЕПТА С НЕСКОЛЬКИМИ РАЗДЕЛАМИ
+     ********************************************************************/
+    function openAddRecipeModal() {
+      triggerHaptic("light");
+      document.getElementById("addRecipeModal").classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeAddRecipeModal() {
+      document.getElementById("addRecipeModal").classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    function buildRecipeObjectFromForm() {
+      const title = document.getElementById("newTitle").value.trim() || "Моё блюдо";
+      const category = document.getElementById("newCategory").value;
+
+      // Считываем все выбранные чекбоксы целей (например, ["Сушка", "Поддержка"])
+      const checkedGoals = Array.from(document.querySelectorAll('input[name="newGoalItem"]:checked')).map(el => el.value);
+      const goals = checkedGoals.length > 0 ? checkedGoals : ["Поддержка"];
+
+      // Считываем все выбранные приёмы пищи
+      const checkedMeals = Array.from(document.querySelectorAll('input[name="newMealItem"]:checked')).map(el => el.value);
+      const meals = checkedMeals.length > 0 ? checkedMeals : ["Обед"];
+
+      const timeMinutes = Math.max(1, Number(document.getElementById("newTimeMinutes").value) || 20);
+      const timeCategory = timeMinutes <= 15 ? "Быстро" : (timeMinutes <= 30 ? "Средне" : "Долго");
+      const baseServings = Math.max(1, Number(document.getElementById("newBaseServings").value) || 1);
+      const macrosMode = document.getElementById("newMacroMode").value;
+
+      const kcal = Math.max(0, Number(document.getElementById("newKcal").value) || 0);
+      const protein = Math.max(0, Number(document.getElementById("newProtein").value) || 0);
+      const fat = Math.max(0, Number(document.getElementById("newFat").value) || 0);
+      const carbs = Math.max(0, Number(document.getElementById("newCarbs").value) || 0);
+      const videoUrl = document.getElementById("newVideoUrl").value.trim();
+
+      const rawIngLines = document.getElementById("newIngredientsText").value.split("\n").map(l => l.trim()).filter(Boolean);
+      const ingredients = rawIngLines.map(line => {
+        const parts = line.split("|").map(p => p.trim());
+        return {
+          name: parts[0] || "Ингредиент",
+          amount: Number(parts[1]) || 100,
+          unit: parts[2] || "г",
+          aisle: baseServings > 1 ? `База на ${baseServings} порц.` : "На 1 порцию"
+        };
+      });
+
+      const rawStepLines = document.getElementById("newStepsText").value.split("\n").map(l => l.trim()).filter(Boolean);
+      const steps = (rawStepLines.length ? rawStepLines : ["Приготовить по рецепту и разложить по порциям."]).map((line, i) => ({
+        title: line,
+        duration: `${Math.max(2, Math.round(timeMinutes / Math.max(1, rawStepLines.length)))} мин`,
+        emoji: i === 0 ? "🔪" : (i === rawStepLines.length - 1 ? "✅" : "🔥")
+      }));
+
+      return {
+        id: "custom-" + Date.now(),
+        category,
+        title,
+        subtitle: `Разделы: ${goals.join(" + ")} • База: на ${baseServings} порц.`,
+        chain: category === "fastfood" ? "Свой сет" : null,
+        goals,
+        meals,
+        timeCategory,
+        timeMinutes,
+        emoji: category === "fastfood" ? "🍔" : "🥘",
+        gradient: "linear-gradient(135deg, #059669 0%, #0284c7 55%, #0f172a 100%)",
+        baseServings,
+        macrosMode,
+        macros: { kcal, protein, fat, carbs },
+        videoUrl: videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        videoDuration: `${timeMinutes} мин`,
+        ingredients,
+        steps
+      };
+    }
+
+    /********************************************************************
+     * 9. БУФЕР ОБМЕНА И ТОСТЫ
+     ********************************************************************/
+    function copyTextToClipboard(text, message = "Скопировано в буфер обмена") {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showToast(message)).catch(() => fallbackCopy(text, message));
+      } else {
+        fallbackCopy(text, message);
+      }
+    }
+
+    function fallbackCopy(text, message) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast(message);
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toastText").textContent = msg;
+      toast.classList.remove("opacity-0");
+      toast.classList.add("opacity-100");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("opacity-100");
+        toast.classList.add("opacity-0");
+      }, 2200);
+    }
+
+    /********************************************************************
+     * 10. ОБРАБОТЧИКИ СОБЫТИЙ
+     ********************************************************************/
+    function bindEvents() {
+      // Main category tabs
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          triggerHaptic("light");
+          state.activeCategory = btn.getAttribute("data-category");
+          document.querySelectorAll(".tab-btn").forEach(b => {
+            if (b.getAttribute("data-category") === state.activeCategory) {
+              b.className = "tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all bg-emerald-500 text-white shadow-sm";
+            } else {
+              b.className = "tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all tg-hint hover:opacity-90";
+            }
+          });
+          renderRecipesGrid();
+        });
+      });
+
+      // Filter chips
+      document.querySelectorAll(".filter-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          triggerHaptic("light");
+          const type = chip.getAttribute("data-filter-type");
+          const val = chip.getAttribute("data-value");
+          state.filters[type] = val;
+          renderFilterChipsUI();
+          renderRecipesGrid();
+        });
+      });
+
+      const resetAll = () => {
+        state.filters = { goal: "all", time: "all", meal: "all" };
+        state.searchQuery = "";
+        document.getElementById("searchInput").value = "";
+        document.getElementById("clearSearchBtn").classList.add("hidden");
+        renderFilterChipsUI();
+        renderRecipesGrid();
+      };
+      document.getElementById("resetFiltersBtn").addEventListener("click", resetAll);
+      document.getElementById("emptyResetBtn").addEventListener("click", resetAll);
+
+      document.getElementById("toggleFiltersBtn").addEventListener("click", () => {
+        document.getElementById("filtersPanel").classList.toggle("hidden");
+      });
+
+      // Search input
+      const searchInput = document.getElementById("searchInput");
+      const clearSearchBtn = document.getElementById("clearSearchBtn");
+      searchInput.addEventListener("input", (e) => {
+        state.searchQuery = e.target.value;
+        clearSearchBtn.classList.toggle("hidden", !state.searchQuery);
+        renderRecipesGrid();
+      });
+      clearSearchBtn.addEventListener("click", () => {
+        state.searchQuery = "";
+        searchInput.value = "";
+        clearSearchBtn.classList.add("hidden");
+        renderRecipesGrid();
+      });
+
+      // Theme toggle
+      document.getElementById("themeToggleBtn").addEventListener("click", () => {
+        state.lightMode = !state.lightMode;
+        document.body.classList.toggle("light-mode", state.lightMode);
+      });
+
+      // Open card
+      document.getElementById("recipesGrid").addEventListener("click", (e) => {
+        const card = e.target.closest(".recipe-card");
+        if (!card) return;
+        openDetailModal(card.getAttribute("data-recipe-id"));
+      });
+
+      // Close modal
+      document.getElementById("closeModalBtn").addEventListener("click", closeDetailModal);
+      document.getElementById("modalBackdrop").addEventListener("click", closeDetailModal);
+
+      // Delete custom recipe
+      document.getElementById("deleteCustomRecipeBtn").addEventListener("click", () => {
+        state.customRecipes = state.customRecipes.filter(r => r.id !== state.currentRecipeId);
+        saveCustomRecipes();
+        updateCounts();
+        renderRecipesGrid();
+        closeDetailModal();
+        showToast("Рецепт удалён");
+      });
+
+      // Portion multiplier buttons
+      document.querySelectorAll(".portion-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          triggerHaptic("light");
+          state.portions = Number(btn.getAttribute("data-portions"));
+          updateModalDynamicContent();
+        });
+      });
+
+      // Custom portion stepper
+      document.getElementById("portionMinusBtn").addEventListener("click", () => {
+        triggerHaptic("light");
+        state.portions = Math.max(1, state.portions - 1);
+        updateModalDynamicContent();
+      });
+      document.getElementById("portionPlusBtn").addEventListener("click", () => {
+        triggerHaptic("light");
+        state.portions = Math.min(50, state.portions + 1);
+        updateModalDynamicContent();
+      });
+      document.getElementById("customPortionsInput").addEventListener("input", (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (!isNaN(val) && val >= 1 && val <= 50) {
+          state.portions = val;
+          updateModalDynamicContent();
+        }
+      });
+
+      // Copy scaled batch numbers
+      document.getElementById("copyShoppingBtn").addEventListener("click", () => {
+        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+        if (!recipe) return;
+        const p = state.portions;
+        const perOne = getPerPortionMacros(recipe);
+        const lines = [
+          `🍽 ${recipe.title} — расчёт на ${p} порц.`,
+          `🔥 КБЖУ 1 порции: ${perOne.kcal} ккал (Б:${perOne.protein}г Ж:${perOne.fat}г У:${perOne.carbs}г)`,
+          `📊 КБЖУ на ${p} порц.: ${perOne.kcal * p} ккал (Б:${perOne.protein * p}г Ж:${perOne.fat * p}г У:${perOne.carbs * p}г)`,
+          "",
+          `⚖️ Граммовки (умножено на ×${p}):`
+        ];
+        recipe.ingredients.forEach(ing => {
+          const single = calculateScaledAmount(ing.amount, recipe, 1);
+          const total = calculateScaledAmount(ing.amount, recipe, p);
+          lines.push(`• ${ing.name}: ${total} ${ing.unit} (${single} ${ing.unit} × ${p})`);
+        });
+        copyTextToClipboard(lines.join("\n"), `Расчёт на ${p} порц. скопирован!`);
+      });
+
+      // Switch between Inline Video Player and Step-by-Step Guide
+      document.getElementById("modeVideoPlayerBtn").addEventListener("click", () => {
+        stopStepAutoPlay();
+        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+        if (recipe) renderInlineVideoPlayer(recipe);
+        setPlayerTabUI("video");
+      });
+
+      document.getElementById("modeStepGuideBtn").addEventListener("click", () => {
+        document.getElementById("embeddedMediaContainer").innerHTML = "";
+        setPlayerTabUI("steps");
+      });
+
+      // Step controls
+      document.getElementById("prevStepBtn").addEventListener("click", () => {
+        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+        if (!recipe || !recipe.steps) return;
+        stopStepAutoPlay();
+        state.activeStepIndex = (state.activeStepIndex - 1 + recipe.steps.length) % recipe.steps.length;
+        renderStepsAndPlayer(recipe);
+      });
+
+      document.getElementById("nextStepBtn").addEventListener("click", () => {
+        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+        if (!recipe || !recipe.steps) return;
+        stopStepAutoPlay();
+        state.activeStepIndex = (state.activeStepIndex + 1) % recipe.steps.length;
+        renderStepsAndPlayer(recipe);
+      });
+
+      document.getElementById("playStepsBtn").addEventListener("click", toggleStepAutoPlay);
+
+      document.getElementById("stepsList").addEventListener("click", (e) => {
+        const li = e.target.closest(".step-item");
+        if (!li) return;
+        stopStepAutoPlay();
+        state.activeStepIndex = Number(li.getAttribute("data-step-idx"));
+        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+        if (recipe) renderStepsAndPlayer(recipe);
+      });
+
+      // Add Custom Recipe Modal
+      document.getElementById("openAddRecipeBtn").addEventListener("click", openAddRecipeModal);
+      document.getElementById("closeAddRecipeBtn").addEventListener("click", closeAddRecipeModal);
+      document.getElementById("addRecipeBackdrop").addEventListener("click", closeAddRecipeModal);
+
+      document.getElementById("addRecipeForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const newRecipe = buildRecipeObjectFromForm();
+        state.customRecipes.unshift(newRecipe);
+        saveCustomRecipes();
+        updateCounts();
+        state.activeCategory = newRecipe.category;
+        renderRecipesGrid();
+        closeAddRecipeModal();
+        e.target.reset();
+        showToast("Рецепт сохранён во все выбранные разделы!");
+        openDetailModal(newRecipe.id);
+      });
+
+      document.getElementById("exportJsonBtn").addEventListener("click", () => {
+        const obj = buildRecipeObjectFromForm();
+        copyTextToClipboard(JSON.stringify(obj, null, 2), "JSON-объект скопирован!");
+      });
+    }
+
+    // Boot Application
+    window.addEventListener("DOMContentLoaded", () => {
+      loadCustomRecipes();
+      initTelegramSDK();
+      updateCounts();
+      renderFilterChipsUI();
+      renderRecipesGrid();
+      bindEvents();
+    });
+  </script>
+</body>
+</html>
