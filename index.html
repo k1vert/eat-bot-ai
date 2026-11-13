@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FitMacro TMA — Калькулятор порций, КБЖУ и видео-рецепты</title>
+  <title>FitMacro TMA — Калькулятор порций, КБЖУ, редактор и ИИ-оптимизатор</title>
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Tailwind CSS CDN -->
@@ -92,9 +92,9 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="text-lg font-extrabold tracking-tight leading-none">FitMacro</h1>
-              <span id="cloudSyncBadge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">☁️ Cloud Sync</span>
+              <button id="cloudSyncBadge" type="button" title="Нажми для принудительной синхронизации с облаком" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/25 active:scale-95 transition">☁️ Cloud Sync ↻</button>
             </div>
-            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Облачное сохранение Telegram + авто-умножение</p>
+            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Редактор блюд + ИИ-оптимизатор КБЖУ</p>
           </div>
         </div>
 
@@ -106,30 +106,35 @@
           </button>
 
           <!-- Backup / Restore Modal Button -->
-          <button id="openBackupBtn" type="button" title="Бэкап и перенос рецептов" class="tg-card px-2.5 py-2 rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition">
+          <button id="openBackupBtn" type="button" title="Бэкап и настройки ИИ" class="tg-card px-2.5 py-2 rounded-xl text-xs font-bold hover:opacity-90 active:scale-95 transition">
             💾
           </button>
 
           <!-- Theme Switcher -->
           <button id="themeToggleBtn" type="button" aria-label="Переключить тему" class="tg-card p-2 rounded-xl hover:opacity-90 active:scale-95 transition">
             <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707-.707M6.343 17.657l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
             </svg>
           </button>
         </div>
       </div>
 
-      <!-- Main Section Segmented Tabs -->
-      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl tg-card">
-        <button id="tabHomeBtn" type="button" data-category="home" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all bg-emerald-500 text-white shadow-sm">
+      <!-- Main Section Segmented Tabs (3 tabs: Home, Fastfood, My Cloud Recipes) -->
+      <div class="grid grid-cols-3 gap-1 p-1 rounded-2xl tg-card">
+        <button id="tabHomeBtn" type="button" data-category="home" class="tab-btn flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all bg-emerald-500 text-white shadow-sm">
           <span>🍳</span>
-          <span>Домашняя кухня</span>
-          <span id="countHome" class="text-[11px] px-1.5 py-0.5 rounded-full bg-black/20">4</span>
+          <span class="truncate">Кухня</span>
+          <span id="countHome" class="text-[10px] px-1.5 py-0.5 rounded-full bg-black/20">4</span>
         </button>
-        <button id="tabFastfoodBtn" type="button" data-category="fastfood" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all tg-hint hover:opacity-90">
+        <button id="tabFastfoodBtn" type="button" data-category="fastfood" class="tab-btn flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all tg-hint hover:opacity-90">
           <span>🍔</span>
-          <span>Фастфуд-хаки</span>
-          <span id="countFastfood" class="text-[11px] px-1.5 py-0.5 rounded-full bg-slate-500/15">2</span>
+          <span class="truncate">Фастфуд</span>
+          <span id="countFastfood" class="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-500/15">2</span>
+        </button>
+        <button id="tabCustomBtn" type="button" data-category="custom" class="tab-btn flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all tg-hint hover:opacity-90">
+          <span>☁️</span>
+          <span class="truncate">Мои</span>
+          <span id="countCustom" class="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">0</span>
         </button>
       </div>
     </div>
@@ -205,7 +210,7 @@
         <div class="text-2xl shrink-0">🍟</div>
         <div class="text-xs leading-relaxed">
           <p class="font-bold text-amber-400 mb-0.5">Правило фастфуд-хакинга: 40–55 г белка при ≤650 ккал</p>
-          <p class="tg-hint">Один сет может одновременно подходить под «Сушку» и «Поддержку» — выбирай количество порций, и бот сам пересчитает состав и КБЖУ.</p>
+          <p class="tg-hint">Любой сет и блюдо можно отредактировать кнопкой «✏️ Редачить» или прогнать через встроенного ИИ-нутрициолога.</p>
         </div>
       </div>
     </div>
@@ -230,14 +235,18 @@
     <div class="relative z-10 flex flex-col justify-end min-h-screen pointer-events-none">
       <div class="pointer-events-auto w-full max-w-2xl mx-auto tg-card rounded-t-3xl max-h-[94vh] flex flex-col overflow-hidden shadow-2xl animate-slide-up">
         
-        <!-- Sticky Modal Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-500/15 shrink-0">
-          <div class="flex items-center gap-2 truncate pr-2">
+        <!-- Sticky Modal Header (Now with Edit Button for ANY Recipe!) -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-500/15 shrink-0 gap-2">
+          <div class="flex items-center gap-2 truncate">
             <span id="modalCategoryBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400"></span>
-            <span id="modalTimeBadge" class="text-xs tg-hint font-medium"></span>
+            <span id="modalTimeBadge" class="text-xs tg-hint font-medium truncate"></span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button id="deleteCustomRecipeBtn" type="button" class="hidden px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 text-[11px] font-bold hover:bg-rose-500/25 transition">Удалить</button>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button id="editCurrentRecipeBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-sky-500/15 text-sky-400 text-xs font-extrabold hover:bg-sky-500/25 active:scale-95 transition flex items-center gap-1">
+              <span>✏️</span>
+              <span>Редачить</span>
+            </button>
+            <button id="deleteCustomRecipeBtn" type="button" class="hidden px-2.5 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-xs font-bold hover:bg-rose-500/25 transition">Удалить</button>
             <button id="closeModalBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold hover:bg-slate-500/25 transition">✕</button>
           </div>
         </div>
@@ -285,20 +294,6 @@
             </div>
           </div>
 
-          <!-- Dynamic Auto-Multiplied Ingredients Table -->
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <div>
-                <h3 id="shoppingSectionTitle" class="text-xs font-bold uppercase tracking-wider text-emerald-400">⚖️ Итого граммовок для закупки / готовки</h3>
-                <p id="multiplierFormulaHint" class="text-[11px] tg-hint">Все числа автоматически умножены ботом</p>
-              </div>
-              <button id="copyShoppingBtn" type="button" class="text-[11px] px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 active:scale-95 transition shrink-0">
-                📋 Скопировать расчёт
-              </button>
-            </div>
-            <div id="ingredientsListContainer" class="space-y-1.5"></div>
-          </div>
-
           <!-- Dynamic KBZHU Macro Cards -->
           <div>
             <div class="flex items-center justify-between mb-2">
@@ -327,6 +322,64 @@
                 <div id="macroPerOneCarbs" class="text-[10px] tg-hint">энергия</div>
               </div>
             </div>
+          </div>
+
+          <!-- ✨ AI MACRO & INGREDIENT OPTIMIZER BLOCK ✨ -->
+          <div class="rounded-2xl p-4 bg-gradient-to-br from-indigo-500/15 via-purple-500/10 to-sky-500/15 border border-indigo-500/35 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-base">🧠</span>
+                  <h3 class="text-xs sm:text-sm font-extrabold text-indigo-300 uppercase tracking-wide">ИИ-Оптимизатор КБЖУ и замен</h3>
+                </div>
+                <p class="text-[11px] tg-hint mt-0.5">Анализирует продукты в твоём рецепте и предлагает умные замены или изменения граммовок, которые можно применить в 1 клик</p>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/25 text-indigo-300 border border-indigo-400/30 shrink-0">Smart AI</span>
+            </div>
+
+            <!-- Quick Goal Chips for AI Analysis -->
+            <div class="flex flex-wrap gap-1.5" id="aiGoalChipsContainer">
+              <button type="button" data-ai-goal="low_kcal" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-500 text-white shadow-sm transition">
+                📉 Снизить калории
+              </button>
+              <button type="button" data-ai-goal="high_protein" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
+                💪 Больше белка (+15–25 г)
+              </button>
+              <button type="button" data-ai-goal="low_fat" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
+                💧 Урезать жиры
+              </button>
+              <button type="button" data-ai-goal="high_carbs" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
+                ⚡ Больше углей / сытности
+              </button>
+              <button type="button" data-ai-goal="low_carbs" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
+                🥗 Меньше углей (Сушка)
+              </button>
+            </div>
+
+            <!-- Custom Prompt Input for AI Advisor -->
+            <div class="flex gap-1.5">
+              <input id="aiCustomPromptInput" type="text" placeholder="Или напиши запрос: напр. «чем заменить йогурт» или «сделай 65г белка»..." class="flex-1 tg-card rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/60" />
+              <button id="runAiCustomBtn" type="button" class="px-3 py-2 rounded-xl bg-indigo-500 text-white text-xs font-extrabold hover:bg-indigo-600 active:scale-95 transition shrink-0">
+                Подобрать
+              </button>
+            </div>
+
+            <!-- AI Suggestions Output List -->
+            <div id="aiSuggestionsContainer" class="space-y-2 pt-1"></div>
+          </div>
+
+          <!-- Dynamic Auto-Multiplied Ingredients Table -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h3 id="shoppingSectionTitle" class="text-xs font-bold uppercase tracking-wider text-emerald-400">⚖️ Итого граммовок для закупки / готовки</h3>
+                <p id="multiplierFormulaHint" class="text-[11px] tg-hint">Все числа автоматически умножены ботом</p>
+              </div>
+              <button id="copyShoppingBtn" type="button" class="text-[11px] px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 active:scale-95 transition shrink-0">
+                📋 Скопировать расчёт
+              </button>
+            </div>
+            <div id="ingredientsListContainer" class="space-y-1.5"></div>
           </div>
 
           <!-- Fastfood Combo Breakdown & Order Lifehacks -->
@@ -385,20 +438,22 @@
     </div>
   </div>
 
-  <!-- Add Custom Recipe Modal -->
+  <!-- Add OR Edit Custom Recipe Modal -->
   <div id="addRecipeModal" class="fixed inset-0 z-50 hidden">
     <div id="addRecipeBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm"></div>
     <div class="relative z-10 flex flex-col justify-end min-h-screen pointer-events-none">
       <div class="pointer-events-auto w-full max-w-xl mx-auto tg-card rounded-t-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-slide-up">
         <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-500/15">
           <div>
-            <h3 class="text-base font-extrabold">＋ Добавить свой рецепт</h3>
-            <p class="text-[11px] tg-hint">Сохраняется в облако Telegram CloudStorage (не пропадает при очистке кэша)</p>
+            <h3 id="recipeFormModalTitle" class="text-base font-extrabold">＋ Добавить свой рецепт</h3>
+            <p id="recipeFormModalSubtitle" class="text-[11px] tg-hint">Сохраняется в облако Telegram CloudStorage (не пропадает при очистке кэша)</p>
           </div>
           <button id="closeAddRecipeBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold">✕</button>
         </div>
 
         <form id="addRecipeForm" class="p-4 overflow-y-auto space-y-3.5 flex-1 text-xs">
+          <input id="editingRecipeId" type="hidden" value="" />
+
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div class="sm:col-span-2">
               <label class="block font-bold mb-1 tg-hint">Название блюда</label>
@@ -464,7 +519,7 @@
           <!-- Base Servings & KBZHU -->
           <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2.5">
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <label class="font-extrabold text-emerald-400">На сколько порций ты сейчас вписываешь граммовки?</label>
+              <label class="font-extrabold text-emerald-400">На сколько порций указаны граммовки ниже?</label>
               <div class="flex items-center gap-1.5">
                 <input id="newBaseServings" type="number" min="1" max="50" value="1" class="w-16 tg-card rounded-xl px-2.5 py-1.5 text-center font-extrabold text-emerald-400" />
                 <span class="tg-hint font-semibold">порц.</span>
@@ -507,7 +562,7 @@
 
           <div>
             <label class="block font-bold mb-1 tg-hint">Ингредиенты (по одному на строке: Название | Количество | Ед. изм.)</label>
-            <textarea id="newIngredientsText" rows="4" required placeholder="Филе грудки | 200 | г&#10;Рис сухой | 70 | г&#10;Йогурт греческий | 50 | г" class="w-full tg-card rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+            <textarea id="newIngredientsText" rows="5" required placeholder="Филе грудки | 200 | г&#10;Рис сухой | 70 | г&#10;Йогурт греческий | 50 | г" class="w-full tg-card rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
           </div>
 
           <div>
@@ -517,7 +572,7 @@
 
           <div class="pt-2 flex items-center justify-end gap-2">
             <button id="exportJsonBtn" type="button" class="px-3 py-2.5 rounded-xl bg-sky-500/15 text-sky-400 font-bold hover:bg-sky-500/25 transition">Скопировать JSON</button>
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">Сохранить в облако</button>
+            <button id="submitRecipeFormBtn" type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">Сохранить в облако</button>
           </div>
         </form>
       </div>
@@ -532,21 +587,27 @@
         <div class="flex items-center justify-between px-4 py-3.5 border-b border-slate-500/15">
           <div>
             <h3 class="text-base font-extrabold">💾 Облако и резервная копия рецептов</h3>
-            <p class="text-[11px] tg-hint">Твои рецепты синхронизируются с Telegram CloudStorage + можно скопировать/восстановить JSON</p>
+            <p class="text-[11px] tg-hint">Твои рецепты и правки синхронизируются с Telegram CloudStorage</p>
           </div>
           <button id="closeBackupBtn" type="button" class="w-8 h-8 rounded-full bg-slate-500/15 flex items-center justify-center text-sm font-bold">✕</button>
         </div>
 
         <div class="p-4 space-y-3 overflow-y-auto text-xs">
-          <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
+          <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-2">
             <div>
-              <div class="font-bold text-emerald-400">Статус хранилища</div>
-              <div id="storageStatsText" class="text-[11px] tg-hint mt-0.5">Своих рецептов: 0</div>
+              <div class="font-bold text-emerald-400">Статус облачного хранилища</div>
+              <div id="storageStatsText" class="text-[11px] tg-hint mt-0.5">Своих/изменённых рецептов: 0</div>
             </div>
-            <button id="copyAllCustomJsonBtn" type="button" class="px-3 py-2 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">
-              📋 Скопировать все свои рецепты
-            </button>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button id="forceCloudPullBtn" type="button" class="px-2.5 py-2 rounded-xl bg-sky-500/20 text-sky-400 font-extrabold hover:bg-sky-500/30 transition">
+                🔄 Обновить
+              </button>
+              <button id="copyAllCustomJsonBtn" type="button" class="px-3 py-2 rounded-xl bg-emerald-500 text-white font-extrabold hover:bg-emerald-600 transition">
+                📋 Скопировать
+              </button>
+            </div>
           </div>
+          <div id="cloudRecipesQuickList" class="space-y-1.5"></div>
 
           <div>
             <label class="block font-bold mb-1 tg-hint">Восстановить / импортировать рецепты из JSON</label>
@@ -783,10 +844,7 @@
     ];
 
     /********************************************************************
-     * 2. НАДЁЖНОЕ ТРОЙНОЕ ХРАНИЛИЩЕ:
-     *    1) Telegram CloudStorage (хранится на серверах Telegram, привязано к аккаунту!)
-     *    2) IndexedDB (постоянная база браузера)
-     *    3) localStorage (быстрый кэш с миграцией старых ключей)
+     * 2. НАДЁЖНОЕ ТРОЙНОЕ ХРАНИЛИЩЕ + ПОДДЕРЖКА РЕДАКТИРОВАНИЯ ЛЮБЫХ БЛЮД
      ********************************************************************/
     const STORAGE_KEY = "fitmacro_custom_recipes_v2";
     const LEGACY_KEYS = ["fitmacro_custom_recipes_v1", "fitmacro_recipes"];
@@ -802,41 +860,105 @@
       },
       searchQuery: "",
       currentRecipeId: null,
-      portions: 5,
+      portions: 1,
       activeStepIndex: 0,
       stepIntervalId: null,
       lightMode: false,
-      customRecipes: []
+      customRecipes: [],
+      activeAiGoal: "low_kcal",
+      currentAiSuggestions: []
     };
 
     function getRecipeGoals(recipe) {
+      if (!recipe) return ["Поддержка"];
       if (Array.isArray(recipe.goals) && recipe.goals.length > 0) return recipe.goals;
       if (recipe.goal) return [recipe.goal];
       return ["Поддержка"];
     }
 
     function getRecipeMeals(recipe) {
+      if (!recipe) return ["Обед"];
       if (Array.isArray(recipe.meals) && recipe.meals.length > 0) return recipe.meals;
       if (recipe.meal) return [recipe.meal];
       return ["Обед"];
     }
 
-    function getAllRecipes() {
-      return [...state.customRecipes, ...DEFAULT_RECIPES_DATA];
+    // Нормализует любой объект рецепта из облака или старых версий, чтобы ни одно поле не вызвало ошибку рендера на телефоне
+    function sanitizeRecipeObject(raw) {
+      if (!raw || typeof raw !== "object") return null;
+      const category = (raw.category === "fastfood" || raw.category === "home") ? raw.category : "home";
+      const timeMinutes = Math.max(1, Number(raw.timeMinutes) || 20);
+      const timeCategory = raw.timeCategory || (timeMinutes <= 15 ? "Быстро" : (timeMinutes <= 30 ? "Средне" : "Долго"));
+      const goals = getRecipeGoals(raw);
+      const meals = getRecipeMeals(raw);
+      const m = raw.macros && typeof raw.macros === "object" ? raw.macros : {};
+
+      const ingredients = Array.isArray(raw.ingredients)
+        ? raw.ingredients.filter(Boolean).map(ing => ({
+            name: String(ing.name || "Ингредиент"),
+            amount: Number(ing.amount) || 100,
+            unit: String(ing.unit || "г"),
+            aisle: String(ing.aisle || "Продукты")
+          }))
+        : [];
+
+      const steps = Array.isArray(raw.steps) && raw.steps.length > 0
+        ? raw.steps.filter(Boolean).map(s => ({
+            title: String(s.title || s || "Шаг приготовления"),
+            duration: String(s.duration || "3 мин"),
+            emoji: String(s.emoji || "🔥")
+          }))
+        : [{ title: "Приготовить блюдо по списку ингредиентов.", duration: `${timeMinutes} мин`, emoji: "🍳" }];
+
+      return {
+        ...raw,
+        id: String(raw.id || ("custom-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6))),
+        category,
+        title: String(raw.title || "Моё блюдо"),
+        subtitle: String(raw.subtitle || `Разделы: ${goals.join(" + ")}`),
+        goals,
+        meals,
+        timeMinutes,
+        timeCategory,
+        emoji: String(raw.emoji || (category === "fastfood" ? "🍔" : "🥘")),
+        gradient: String(raw.gradient || "linear-gradient(135deg, #059669 0%, #0284c7 55%, #0f172a 100%)"),
+        baseServings: Math.max(1, Number(raw.baseServings) || 1),
+        macrosMode: raw.macrosMode === "total_batch" ? "total_batch" : "per_portion",
+        macros: {
+          kcal: Math.max(0, Number(m.kcal) || 0),
+          protein: Math.max(0, Number(m.protein) || 0),
+          fat: Math.max(0, Number(m.fat) || 0),
+          carbs: Math.max(0, Number(m.carbs) || 0)
+        },
+        ingredients,
+        steps,
+        updatedAt: Number(raw.updatedAt) || Date.now()
+      };
     }
 
-    // Дедупликация рецептов по id
+    // Если стандартный рецепт был отредактирован пользователем, его новая версия из customRecipes перекрывает стандартную!
+    function getAllRecipes() {
+      const sanitizedCustom = (state.customRecipes || []).map(sanitizeRecipeObject).filter(Boolean);
+      const customIds = new Set(sanitizedCustom.map(r => r.id));
+      const untouchedDefaults = DEFAULT_RECIPES_DATA.filter(r => !customIds.has(r.id));
+      return [...sanitizedCustom, ...untouchedDefaults];
+    }
+
+    // Объединяет рецепты из облака и локальной памяти, выбирая более свежую версию по updatedAt
     function mergeRecipeArrays(arrA, arrB) {
       const map = new Map();
-      [...(arrA || []), ...(arrB || [])].forEach(item => {
+      [...(arrB || []), ...(arrA || [])].forEach(rawItem => {
+        const item = sanitizeRecipeObject(rawItem);
         if (item && item.id) {
-          map.set(item.id, item);
+          const existing = map.get(item.id);
+          if (!existing || (item.updatedAt >= (existing.updatedAt || 0))) {
+            map.set(item.id, item);
+          }
         }
       });
       return Array.from(map.values());
     }
 
-    // --- IndexedDB Helper ---
     function openIDB() {
       return new Promise((resolve, reject) => {
         if (!window.indexedDB) return reject(new Error("No IDB"));
@@ -876,11 +998,9 @@
       }
     }
 
-    // --- Telegram CloudStorage Helper (Разбивает JSON на чанки по 3500 символов, чтобы обойти лимит 4096 байт на ключ) ---
     function getTelegramCloudStorage() {
       const tg = window.Telegram && window.Telegram.WebApp;
       if (tg && tg.CloudStorage && typeof tg.CloudStorage.setItem === "function") {
-        // CloudStorage поддерживается начиная с версии 6.9
         if (!tg.isVersionAtLeast || tg.isVersionAtLeast("6.9")) {
           return tg.CloudStorage;
         }
@@ -888,20 +1008,37 @@
       return null;
     }
 
+    // ВАЖНО: В Telegram CloudStorage лимит 4096 БАЙТ (UTF-8), а русские буквы занимают по 2 байта!
+    // Поэтому режем по 1200 символов (~2400 байт) и ждём сохранения каждого чанка перед записью мета-ключа.
     function saveToTelegramCloud(recipes) {
       const cloud = getTelegramCloudStorage();
       if (!cloud) return;
 
       try {
-        const payload = JSON.stringify(recipes || []);
-        const chunkSize = 3500;
+        const sanitized = (recipes || []).map(sanitizeRecipeObject).filter(Boolean);
+        const payload = JSON.stringify(sanitized);
+        const chunkSize = 1200;
         const totalChunks = Math.ceil(payload.length / chunkSize);
 
+        if (totalChunks === 0) {
+          cloud.setItem(CLOUD_META_KEY, JSON.stringify({ count: 0, recipeCount: 0, updatedAt: Date.now() }), () => {});
+          return;
+        }
+
+        let completed = 0;
         for (let i = 0; i < totalChunks; i++) {
           const slice = payload.slice(i * chunkSize, (i + 1) * chunkSize);
-          cloud.setItem(`${CLOUD_CHUNK_PREFIX}${i}`, slice, () => {});
+          cloud.setItem(`${CLOUD_CHUNK_PREFIX}${i}`, slice, () => {
+            completed++;
+            if (completed === totalChunks) {
+              cloud.setItem(
+                CLOUD_META_KEY,
+                JSON.stringify({ count: totalChunks, recipeCount: sanitized.length, updatedAt: Date.now() }),
+                () => {}
+              );
+            }
+          });
         }
-        cloud.setItem(CLOUD_META_KEY, JSON.stringify({ count: totalChunks, updatedAt: Date.now() }), () => {});
       } catch (e) {}
     }
 
@@ -935,7 +1072,8 @@
               }
               try {
                 const parsed = JSON.parse(fullStr);
-                resolve(Array.isArray(parsed) ? parsed : []);
+                const valid = Array.isArray(parsed) ? parsed.map(sanitizeRecipeObject).filter(Boolean) : [];
+                resolve(valid);
               } catch (e) {
                 resolve([]);
               }
@@ -947,14 +1085,12 @@
       });
     }
 
-    // --- Единая функция загрузки и сохранения во все 3 хранилища ---
-    async function loadCustomRecipes() {
+    async function loadCustomRecipes(showSyncToast = false) {
       let localArr = [];
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) localArr = JSON.parse(raw) || [];
 
-        // Проверяем старые ключи на случай миграции
         LEGACY_KEYS.forEach(k => {
           const oldRaw = localStorage.getItem(k);
           if (oldRaw) {
@@ -971,19 +1107,31 @@
       const idbArr = await loadFromIDB();
       const cloudArr = await loadFromTelegramCloud();
 
-      const merged = mergeRecipeArrays(mergeRecipeArrays(cloudArr, idbArr), localArr);
+      // Приоритет отдаём облаку Telegram (cloudArr), чтобы добавленные с ПК блюда сразу подтягивались на телефон
+      const merged = mergeRecipeArrays(cloudArr, mergeRecipeArrays(idbArr, localArr));
       state.customRecipes = merged;
 
-      // Синхронизируем обратно во все хранилища, если нашли рецепты в одном из них
-      if (merged.length > 0) {
-        saveCustomRecipes();
+      // Если рецепты есть только в другой вкладке (например, все добавленные блюда в «Фастфуд-хаках», а открыта «Домашняя кухня»),
+      // обновляем счётчики обеих вкладок и перерисовываем сетку
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.customRecipes));
+      } catch (e) {}
+      saveToIDB(state.customRecipes);
+      if (merged.length > cloudArr.length) {
+        saveToTelegramCloud(state.customRecipes);
       }
+
       updateCounts();
       renderRecipesGrid();
       updateStorageBadge();
+
+      if (showSyncToast) {
+        showToast(`Облако синхронизировано: своих блюд ${state.customRecipes.length}`);
+      }
     }
 
     function saveCustomRecipes() {
+      state.customRecipes = (state.customRecipes || []).map(sanitizeRecipeObject).filter(Boolean);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.customRecipes));
       } catch (e) {}
@@ -992,20 +1140,48 @@
       updateStorageBadge();
     }
 
+    function upsertRecipeInStorage(updatedRecipe) {
+      const idx = state.customRecipes.findIndex(r => r.id === updatedRecipe.id);
+      if (idx >= 0) {
+        state.customRecipes[idx] = updatedRecipe;
+      } else {
+        state.customRecipes.unshift(updatedRecipe);
+      }
+      saveCustomRecipes();
+      updateCounts();
+      renderRecipesGrid();
+    }
+
     function updateStorageBadge() {
       const badge = document.getElementById("cloudSyncBadge");
       const statsEl = document.getElementById("storageStatsText");
+      const listEl = document.getElementById("cloudRecipesQuickList");
       const hasCloud = Boolean(getTelegramCloudStorage());
       if (badge) {
-        badge.textContent = hasCloud ? `☁️ TG Облако (${state.customRecipes.length})` : `💾 Память (${state.customRecipes.length})`;
+        badge.textContent = hasCloud ? `☁️ TG Облако (${state.customRecipes.length}) ↻` : `💾 Память (${state.customRecipes.length})`;
       }
       if (statsEl) {
-        statsEl.textContent = `Своих рецептов сохранено: ${state.customRecipes.length} шт. (${hasCloud ? "Синхронизировано с Telegram CloudStorage" : "Локальное хранилище + IndexedDB"})`;
+        statsEl.textContent = `Своих/изменённых рецептов: ${state.customRecipes.length} шт. (${hasCloud ? "Синхронизировано с Telegram CloudStorage" : "Локальное хранилище + IndexedDB"})`;
+      }
+      if (listEl) {
+        if (state.customRecipes.length === 0) {
+          listEl.innerHTML = `<div class="text-[11px] tg-hint py-1">Список твоих облачных рецептов пока пуст.</div>`;
+        } else {
+          listEl.innerHTML = state.customRecipes.map(r => `
+            <div data-open-cloud-id="${r.id}" class="cloud-quick-item tg-card rounded-xl px-3 py-2 flex items-center justify-between gap-2 cursor-pointer hover:border-emerald-500/40 transition">
+              <div class="truncate">
+                <span class="font-bold">${r.emoji || "🥘"} ${r.title}</span>
+                <span class="text-[10px] tg-hint ml-1">(${r.category === "fastfood" ? "Фастфуд" : "Кухня"})</span>
+              </div>
+              <span class="text-[11px] font-bold text-emerald-400 shrink-0">Открыть →</span>
+            </div>
+          `).join("");
+        }
       }
     }
 
     /********************************************************************
-     * 3. АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ГРАММОВОК БОТОМ (УМНОЖЕНИЕ НА ПОРЦИИ)
+     * 3. АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ГРАММОВОК БОТОМ
      ********************************************************************/
     function getBaseServings(recipe) {
       return recipe.baseServings && recipe.baseServings > 0 ? Number(recipe.baseServings) : 1;
@@ -1032,7 +1208,392 @@
     }
 
     /********************************************************************
-     * 4. ВСТРОЕННЫЙ ВИДЕО-ПЛЕЕР
+     * 4. УМНЫЙ ИИ-ОПТИМИЗАТОР КБЖУ И ЗАМЕН ИНГРЕДИЕНТОВ
+     ********************************************************************/
+    const INGREDIENT_KNOWLEDGE_BASE = [
+      {
+        keywords: ["курин", "грудк", "индейк", "филе"],
+        category: "lean_protein",
+        kcalPer100: 115, protPer100: 23, fatPer100: 2, carbsPer100: 0,
+        swapToLeaner: null,
+        swapToRicher: { newName: "Филе бедра индейки / курицы", kcalDeltaPer100: 45, protDeltaPer100: -2, fatDeltaPer100: 6, carbsDeltaPer100: 0 }
+      },
+      {
+        keywords: ["креветк", "тунец", "рыб", "минтай", "треск", "морепродукт"],
+        category: "lean_protein",
+        kcalPer100: 95, protPer100: 21, fatPer100: 1.5, carbsPer100: 0,
+        swapToLeaner: null
+      },
+      {
+        keywords: ["говядин", "вырезк", "фарш", "котлет", "свинин"],
+        category: "meat_protein",
+        kcalPer100: 185, protPer100: 20, fatPer100: 11, carbsPer100: 0,
+        swapToLeaner: { newName: "Филе грудки индейки (или постный фарш 95/5)", kcalDeltaPer100: -70, protDeltaPer100: 3, fatDeltaPer100: -9, carbsDeltaPer100: 0 }
+      },
+      {
+        keywords: ["яйц", "яиц"],
+        category: "egg",
+        kcalPerUnit: 75, protPerUnit: 6.5, fatPerUnit: 5.5, carbsPerUnit: 0.5
+      },
+      {
+        keywords: ["рис", "паст", "макарон", "гречк", "овсян", "круп", "лапш", "спагетти"],
+        category: "dry_carb",
+        kcalPer100: 345, protPer100: 11, fatPer100: 1.5, carbsPer100: 72,
+        swapToLowCarb: { newName: "Паста Ширатаки / кабачковая лапша (или цветная капуста рисом)", kcalDeltaPer100: -310, protDeltaPer100: -9, fatDeltaPer100: -1, carbsDeltaPer100: -68 }
+      },
+      {
+        keywords: ["картофел", "батат", "пюре"],
+        category: "starchy_veg",
+        kcalPer100: 82, protPer100: 2, fatPer100: 0.2, carbsPer100: 17,
+        swapToLowCarb: { newName: "Соцветия брокколи и цветной капусты (запечённые)", kcalDeltaPer100: -50, protDeltaPer100: 1, fatDeltaPer100: 0, carbsDeltaPer100: -12 }
+      },
+      {
+        keywords: ["тортиль", "лаваш", "булочк", "хлеб", "тост"],
+        category: "bread_carb",
+        kcalPerUnit: 175, protPerUnit: 5, fatPerUnit: 3, carbsPerUnit: 31
+      },
+      {
+        keywords: ["сыр", "пармезан", "моцарелл", "чеддер", "сулугуни"],
+        category: "cheese_fat",
+        kcalPer100: 290, protPer100: 24, fatPer100: 20, carbsPer100: 1,
+        swapToLeaner: { newName: "Сыр лёгкий 15% (или творожный сыр Light)", kcalDeltaPer100: -95, protDeltaPer100: 4, fatDeltaPer100: -11, carbsDeltaPer100: 0 }
+      },
+      {
+        keywords: ["масл", "авокадо", "орех", "кунжут", "майонез", "сливк"],
+        category: "pure_fat",
+        kcalPer100: 450, protPer100: 2, fatPer100: 48, carbsPer100: 3
+      },
+      {
+        keywords: ["йогурт", "сметан"],
+        category: "dairy",
+        kcalPer100: 68, protPer100: 9, fatPer100: 2, carbsPer100: 3.5
+      },
+      {
+        keywords: ["боксмастер", "чизбургер", "бургер", "ролл", "шаурм"],
+        category: "fastfood_main"
+      },
+      {
+        keywords: ["наггетс", "стрипс"],
+        category: "fastfood_side"
+      }
+    ];
+
+    function classifyIngredient(ingName) {
+      const lower = (ingName || "").toLowerCase();
+      for (const entry of INGREDIENT_KNOWLEDGE_BASE) {
+        if (entry.keywords.some(k => lower.includes(k))) {
+          return entry;
+        }
+      }
+      return null;
+    }
+
+    function generateAiSuggestions(recipe, goalType, customQuery = "") {
+      const suggestions = [];
+      const base = getBaseServings(recipe);
+      const q = customQuery.trim().toLowerCase();
+
+      let effectiveGoal = goalType;
+      if (q) {
+        if (q.includes("бел") || q.includes("протеин") || q.includes("мышц")) effectiveGoal = "high_protein";
+        else if (q.includes("жир") || q.includes("масл") || q.includes("легч")) effectiveGoal = "low_fat";
+        else if (q.includes("масс") || q.includes("больше ккал") || q.includes("сытн") || q.includes("угл")) effectiveGoal = "high_carbs";
+        else if (q.includes("сушк") || q.includes("меньше угл") || q.includes("кето")) effectiveGoal = "low_carbs";
+        else if (q.includes("похуд") || q.includes("сниз") || q.includes("калор") || q.includes("меньше ккал")) effectiveGoal = "low_kcal";
+      }
+
+      recipe.ingredients.forEach((ing, idx) => {
+        const info = classifyIngredient(ing.name);
+        const amt = Number(ing.amount) || 0;
+
+        // 1. Цель: БОЛЬШЕ БЕЛКА (high_protein)
+        if (effectiveGoal === "high_protein") {
+          if (info && (info.category === "lean_protein" || info.category === "meat_protein")) {
+            const addAmt = Math.round(80 * base);
+            const protGain = Math.round((info.protPer100 || 22) * 0.8);
+            const kcalGain = Math.round((info.kcalPer100 || 120) * 0.8);
+            suggestions.push({
+              title: `Увеличить «${ing.name}» на +${addAmt} ${ing.unit}`,
+              reason: `Даст сразу +${protGain} г чистого белка на порцию при минимальном росте жиров.`,
+              badge: `+${protGain} г белка | +${kcalGain} ккал`,
+              action: {
+                type: "scale_ingredient",
+                ingIndex: idx,
+                newAmount: amt + addAmt,
+                macroDelta: { kcal: kcalGain, protein: protGain, fat: 1, carbs: 0 }
+              }
+            });
+          }
+          if (info && info.category === "egg") {
+            suggestions.push({
+              title: `Добавить к «${ing.name}» +2 яичных белка (или +1 яйцо)`,
+              reason: `Яичный белок — самый быстрый способ поднять белок блюда на +8 г всего за 35 ккал.`,
+              badge: `+8 г белка | +35 ккал`,
+              action: {
+                type: "add_ingredient",
+                newIng: { name: "Яичный белок (доп. протеин)", amount: 2 * base, unit: "шт", aisle: "Яйца" },
+                macroDelta: { kcal: 35, protein: 8, fat: 0, carbs: 0 }
+              }
+            });
+          }
+          if (info && info.category === "fastfood_side") {
+            suggestions.push({
+              title: `Заменить «${ing.name}» на двойную порцию куриных стрипсов / креветок`,
+              reason: `В фастфуде стрипсы из цельного филе дают больше белка и меньше жира из панировки, чем наггетсы.`,
+              badge: `+14 г белка | +45 ккал`,
+              action: {
+                type: "replace_ingredient",
+                ingIndex: idx,
+                newName: "Стрипсы оригинальные (5 шт.) / Креветки",
+                newAmount: amt,
+                macroDelta: { kcal: 45, protein: 14, fat: -2, carbs: 2 }
+              }
+            });
+          }
+        }
+
+        // 2. Цель: СНИЗИТЬ КАЛОРИИ (low_kcal)
+        if (effectiveGoal === "low_kcal") {
+          if (info && info.category === "dry_carb" && amt >= 40) {
+            const reduceAmt = Math.round(amt * 0.3);
+            const perPortionReduce = reduceAmt / base;
+            const kcalSave = Math.round((perPortionReduce / 100) * 345);
+            const carbSave = Math.round((perPortionReduce / 100) * 72);
+            suggestions.push({
+              title: `Уменьшить «${ing.name}» с ${amt} до ${amt - reduceAmt} ${ing.unit} (-30%)`,
+              reason: `Срезает ${kcalSave} ккал за счёт быстрых/сложных углеводов без потери белка и сытости.`,
+              badge: `−${kcalSave} ккал | −${carbSave} г углей`,
+              action: {
+                type: "scale_ingredient",
+                ingIndex: idx,
+                newAmount: amt - reduceAmt,
+                macroDelta: { kcal: -kcalSave, protein: -2, fat: 0, carbs: -carbSave }
+              }
+            });
+          }
+          if (info && info.swapToLeaner) {
+            const perPortionAmt = amt / base;
+            const kcalSave = Math.max(35, Math.round(Math.abs(info.swapToLeaner.kcalDeltaPer100) * (perPortionAmt / 100)));
+            const fatSave = Math.max(4, Math.round(Math.abs(info.swapToLeaner.fatDeltaPer100) * (perPortionAmt / 100)));
+            suggestions.push({
+              title: `Заменить «${ing.name}» → «${info.swapToLeaner.newName}»`,
+              reason: `Убирает скрытые животные жиры, сохраняя объём порции и повышая долю белка.`,
+              badge: `−${kcalSave} ккал | −${fatSave} г жиров`,
+              action: {
+                type: "replace_ingredient",
+                ingIndex: idx,
+                newName: info.swapToLeaner.newName,
+                newAmount: amt,
+                macroDelta: { kcal: -kcalSave, protein: 3, fat: -fatSave, carbs: 0 }
+              }
+            });
+          }
+          if (info && info.category === "fastfood_main") {
+            suggestions.push({
+              title: `Кастом в киоске: убрать нижнюю булочку или 1 ломтик сыра у «${ing.name}»`,
+              reason: `Минус ~95 ккал быстрых углеводов и насыщенных жиров за 1 секунду.`,
+              badge: `−95 ккал | −14 г углей`,
+              action: {
+                type: "replace_ingredient",
+                ingIndex: idx,
+                newName: `${ing.name} (без нижней булочки / -1 сыр)`,
+                newAmount: amt,
+                macroDelta: { kcal: -95, protein: -2, fat: -3, carbs: -14 }
+              }
+            });
+          }
+        }
+
+        // 3. Цель: УРЕЗАТЬ ЖИРЫ (low_fat)
+        if (effectiveGoal === "low_fat") {
+          if (info && (info.category === "pure_fat" || info.category === "cheese_fat")) {
+            const newAmt = Math.max(1, Math.round(amt * 0.5));
+            suggestions.push({
+              title: `Сократить «${ing.name}» вдвое (${amt} → ${newAmt} ${ing.unit})`,
+              reason: `Жиры дают 9 ккал на каждый грамм — уменьшение вдвое сразу облегчает блюдо.`,
+              badge: `−75 ккал | −8 г жиров`,
+              action: {
+                type: "scale_ingredient",
+                ingIndex: idx,
+                newAmount: newAmt,
+                macroDelta: { kcal: -75, protein: -1, fat: -8, carbs: 0 }
+              }
+            });
+          }
+          if (info && info.swapToLeaner) {
+            suggestions.push({
+              title: `Заменить «${ing.name}» на «${info.swapToLeaner.newName}»`,
+              reason: `Прямая замена жирного компонента на высокобелковый аналог.`,
+              badge: `−80 ккал | −9 г жиров | +3 г белка`,
+              action: {
+                type: "replace_ingredient",
+                ingIndex: idx,
+                newName: info.swapToLeaner.newName,
+                newAmount: amt,
+                macroDelta: { kcal: -80, protein: 3, fat: -9, carbs: 0 }
+              }
+            });
+          }
+        }
+
+        // 4. Цель: БОЛЬШЕ УГЛЕЙ / НА МАССУ (high_carbs)
+        if (effectiveGoal === "high_carbs") {
+          if (info && (info.category === "dry_carb" || info.category === "starchy_veg")) {
+            const addAmt = info.category === "dry_carb" ? Math.round(35 * base) : Math.round(100 * base);
+            const carbGain = info.category === "dry_carb" ? 25 : 17;
+            const kcalGain = info.category === "dry_carb" ? 120 : 85;
+            suggestions.push({
+              title: `Увеличить «${ing.name}» на +${addAmt} ${ing.unit} (${amt} → ${amt + addAmt} ${ing.unit})`,
+              reason: `Отличный способ повысить калорийную плотность и запасы гликогена для силовых тренировок.`,
+              badge: `+${kcalGain} ккал | +${carbGain} г углей`,
+              action: {
+                type: "scale_ingredient",
+                ingIndex: idx,
+                newAmount: amt + addAmt,
+                macroDelta: { kcal: kcalGain, protein: 3, fat: 1, carbs: carbGain }
+              }
+            });
+          }
+        }
+
+        // 5. Цель: МЕНЬШЕ УГЛЕЙ / СУШКА (low_carbs)
+        if (effectiveGoal === "low_carbs") {
+          if (info && info.swapToLowCarb) {
+            suggestions.push({
+              title: `Замена на сушку: «${ing.name}» → «${info.swapToLowCarb.newName}»`,
+              reason: `Почти полностью убирает углеводы из гарнира, сохраняя большой объём тарелки и клетчатку.`,
+              badge: `−160 ккал | −35 г углей`,
+              action: {
+                type: "replace_ingredient",
+                ingIndex: idx,
+                newName: info.swapToLowCarb.newName,
+                newAmount: Math.round(amt * 1.8),
+                macroDelta: { kcal: -160, protein: -2, fat: 0, carbs: -35 }
+              }
+            });
+          }
+        }
+      });
+
+      if (suggestions.length < 2) {
+        if (effectiveGoal === "high_protein") {
+          suggestions.push({
+            title: `Добавить порцию греческого йогурта 2% (100 г) или 100 г филе грудки`,
+            reason: `Универсальный белковый буст к любому приёму пищи без лишних жиров.`,
+            badge: `+18 г белка | +95 ккал`,
+            action: {
+              type: "add_ingredient",
+              newIng: { name: "Филе грудки / Греческий йогурт 2% (белковый буст)", amount: 100 * base, unit: "г", aisle: "Белковый доп" },
+              macroDelta: { kcal: 95, protein: 18, fat: 2, carbs: 2 }
+            }
+          });
+        } else if (effectiveGoal === "high_carbs") {
+          suggestions.push({
+            title: `Добавить цельнозерновую тортилью / тост (65 г) или +50 г риса`,
+            reason: `Добавляет качественные долгие углеводы для профицита калорий.`,
+            badge: `+175 ккал | +32 г углей`,
+            action: {
+              type: "add_ingredient",
+              newIng: { name: "Цельнозерновая тортилья / рис (доп. углеводы)", amount: 65 * base, unit: "г", aisle: "Бакалея" },
+              macroDelta: { kcal: 175, protein: 5, fat: 2, carbs: 32 }
+            }
+          });
+        } else {
+          const firstIdx = 0;
+          const firstIng = recipe.ingredients[firstIdx];
+          if (firstIng) {
+            const newAmt = Math.max(10, Math.round(firstIng.amount * 0.85));
+            suggestions.push({
+              title: `Уменьшить граммовку «${firstIng.name}» на 15% (${firstIng.amount} → ${newAmt} ${firstIng.unit})`,
+              reason: `Плавное снижение общей калорийности порции на ~70 ккал без изменения вкусового баланса.`,
+              badge: `−70 ккал | −8 г углей/жиров`,
+              action: {
+                type: "scale_ingredient",
+                ingIndex: firstIdx,
+                newAmount: newAmt,
+                macroDelta: { kcal: -70, protein: -3, fat: -3, carbs: -8 }
+              }
+            });
+          }
+        }
+      }
+
+      return suggestions.slice(0, 3);
+    }
+
+    function renderAiAdvisorSection(recipe, customQuery = "") {
+      const container = document.getElementById("aiSuggestionsContainer");
+      if (!container || !recipe) return;
+
+      document.querySelectorAll(".ai-goal-btn").forEach(btn => {
+        const g = btn.getAttribute("data-ai-goal");
+        if (g === state.activeAiGoal && !customQuery) {
+          btn.className = "ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-500 text-white shadow-sm transition";
+        } else {
+          btn.className = "ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition";
+        }
+      });
+
+      const list = generateAiSuggestions(recipe, state.activeAiGoal, customQuery);
+      state.currentAiSuggestions = list;
+
+      container.innerHTML = list.map((sug, i) => `
+        <div class="tg-card rounded-xl p-3 border border-indigo-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-xs font-extrabold">${sug.title}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">${sug.badge}</span>
+            </div>
+            <p class="text-[11px] tg-hint leading-snug">${sug.reason}</p>
+          </div>
+          <button type="button" data-apply-ai-idx="${i}" class="apply-ai-btn shrink-0 px-3 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/35 text-[11px] font-extrabold hover:bg-indigo-500 hover:text-white active:scale-95 transition">
+            ✨ Применить в рецепт
+          </button>
+        </div>
+      `).join("");
+    }
+
+    function applyAiSuggestionToRecipe(sugIndex) {
+      const sug = state.currentAiSuggestions[sugIndex];
+      const current = getAllRecipes().find(r => r.id === state.currentRecipeId);
+      if (!sug || !current) return;
+
+      triggerHaptic("medium");
+      const updated = JSON.parse(JSON.stringify(current));
+      const act = sug.action;
+
+      if (act.type === "scale_ingredient" && updated.ingredients[act.ingIndex]) {
+        updated.ingredients[act.ingIndex].amount = act.newAmount;
+      } else if (act.type === "replace_ingredient" && updated.ingredients[act.ingIndex]) {
+        updated.ingredients[act.ingIndex].name = act.newName;
+        updated.ingredients[act.ingIndex].amount = act.newAmount;
+      } else if (act.type === "add_ingredient" && act.newIng) {
+        updated.ingredients.push(act.newIng);
+      }
+
+      if (act.macroDelta) {
+        const factor = updated.macrosMode === "total_batch" ? getBaseServings(updated) : 1;
+        updated.macros.kcal = Math.max(50, updated.macros.kcal + act.macroDelta.kcal * factor);
+        updated.macros.protein = Math.max(1, updated.macros.protein + act.macroDelta.protein * factor);
+        updated.macros.fat = Math.max(1, updated.macros.fat + act.macroDelta.fat * factor);
+        updated.macros.carbs = Math.max(0, updated.macros.carbs + act.macroDelta.carbs * factor);
+      }
+
+      upsertRecipeInStorage(updated);
+      updateModalDynamicContent();
+      renderAiAdvisorSection(updated);
+
+      const isCustom = state.customRecipes.some(r => r.id === updated.id);
+      const isDefaultOverride = DEFAULT_RECIPES_DATA.some(r => r.id === updated.id);
+      const delBtn = document.getElementById("deleteCustomRecipeBtn");
+      delBtn.classList.toggle("hidden", !isCustom);
+      delBtn.textContent = isDefaultOverride ? "Сбросить правки" : "Удалить";
+
+      showToast("Рецепт и КБЖУ обновлены по рекомендации ИИ!");
+    }
+
+    /********************************************************************
+     * 5. ВСТРОЕННЫЙ ВИДЕО-ПЛЕЕР
      ********************************************************************/
     function parseVideoSource(recipe) {
       const raw = (recipe.videoUrl || recipe.youtubeId || "").trim();
@@ -1109,7 +1670,7 @@
     }
 
     /********************************************************************
-     * 5. ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP SDK
+     * 6. ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP SDK
      ********************************************************************/
     function initTelegramSDK() {
       const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -1128,15 +1689,15 @@
         if (user && user.first_name) {
           const greetingEl = document.getElementById("userGreeting");
           if (greetingEl) {
-            greetingEl.textContent = `Привет, ${user.first_name}! Рецепты синхронизированы с облаком`;
+            greetingEl.textContent = `Привет, ${user.first_name}! Редактор и ИИ-оптимизатор готовы`;
           }
         }
 
         tg.BackButton.onClick(() => {
-          if (!document.getElementById("detailModal").classList.contains("hidden")) {
-            closeDetailModal();
-          } else if (!document.getElementById("addRecipeModal").classList.contains("hidden")) {
+          if (!document.getElementById("addRecipeModal").classList.contains("hidden")) {
             closeAddRecipeModal();
+          } else if (!document.getElementById("detailModal").classList.contains("hidden")) {
+            closeDetailModal();
           } else if (!document.getElementById("backupModal").classList.contains("hidden")) {
             closeBackupModal();
           }
@@ -1154,7 +1715,7 @@
     }
 
     /********************************************************************
-     * 6. РЕНДЕР КАРТОЧЕК И ФИЛЬТРАЦИЯ ПО НЕСКОЛЬКИМ РАЗДЕЛАМ
+     * 7. РЕНДЕР КАРТОЧЕК И ФИЛЬТРАЦИЯ
      ********************************************************************/
     function getDishArtHtml(recipe) {
       const goals = getRecipeGoals(recipe);
@@ -1164,7 +1725,7 @@
         <div class="relative h-36 w-full overflow-hidden flex items-end p-3.5" style="background: ${recipe.gradient || 'linear-gradient(135deg, #059669 0%, #0f172a 100%)'};">
           <div class="absolute -right-4 -top-4 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
           <div class="absolute right-3 top-2.5 text-5xl select-none drop-shadow-md">${recipe.emoji || "🍲"}</div>
-          ${isCustom ? `<span class="absolute left-3 top-2.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500 text-white shadow">☁️ Мой рецепт</span>` : ""}
+          ${isCustom ? `<span class="absolute left-3 top-2.5 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500 text-white shadow">☁️ Моё / Изменено</span>` : ""}
           <div class="relative z-10 flex flex-wrap items-center gap-1 w-full">
             ${goals.map(g => `
               <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-black/55 text-emerald-300 border border-emerald-400/30 backdrop-blur-sm">
@@ -1187,14 +1748,32 @@
       const all = getAllRecipes();
       const homeCount = all.filter(r => r.category === "home").length;
       const fastfoodCount = all.filter(r => r.category === "fastfood").length;
+      const customCount = (state.customRecipes || []).length;
       document.getElementById("countHome").textContent = homeCount;
       document.getElementById("countFastfood").textContent = fastfoodCount;
+      const customEl = document.getElementById("countCustom");
+      if (customEl) customEl.textContent = customCount;
+    }
+
+    function updateTabButtonsUI() {
+      document.querySelectorAll(".tab-btn").forEach(b => {
+        if (b.getAttribute("data-category") === state.activeCategory) {
+          b.className = "tab-btn flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all bg-emerald-500 text-white shadow-sm";
+        } else {
+          b.className = "tab-btn flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all tg-hint hover:opacity-90";
+        }
+      });
     }
 
     function getFilteredRecipes() {
       const q = state.searchQuery.trim().toLowerCase();
+      const customIds = new Set((state.customRecipes || []).map(r => r.id));
       return getAllRecipes().filter(item => {
-        if (item.category !== state.activeCategory) return false;
+        if (state.activeCategory === "custom") {
+          if (!customIds.has(item.id)) return false;
+        } else if (item.category !== state.activeCategory) {
+          return false;
+        }
 
         const itemGoals = getRecipeGoals(item);
         const itemMeals = getRecipeMeals(item);
@@ -1268,7 +1847,7 @@
               ${getDishArtHtml(recipe)}
               <div class="p-4">
                 <h3 class="text-base font-extrabold leading-snug mb-1">${recipe.title}</h3>
-                <p class="text-xs tg-hint line-clamp-2 mb-3.5">${recipe.subtitle || "Рецепт с авто-умножением граммовок и видео"}</p>
+                <p class="text-xs tg-hint line-clamp-2 mb-3.5">${recipe.subtitle || "Рецепт с авто-умножением граммовок и ИИ-оптимизатором"}</p>
 
                 <!-- Macro Strip (per 1 portion) -->
                 <div class="grid grid-cols-4 gap-1.5 text-center p-2 rounded-xl bg-slate-500/10">
@@ -1293,9 +1872,9 @@
             </div>
 
             <div class="px-4 pb-3.5 pt-1 flex items-center justify-between text-xs">
-              <span class="text-[11px] font-semibold text-emerald-400">🎬 Видео внутри • ⚡ ${proteinCaloriePct}% белка</span>
+              <span class="text-[11px] font-semibold text-emerald-400">🧠 ИИ-разбор • ⚡ ${proteinCaloriePct}% белка</span>
               <span class="font-bold flex items-center gap-1 text-sky-400">
-                <span>Умножить порции</span>
+                <span>Открыть</span>
                 <span>→</span>
               </span>
             </div>
@@ -1305,7 +1884,7 @@
     }
 
     /********************************************************************
-     * 7. МОДАЛКА ДЕТАЛЕЙ, АВТО-УМНОЖЕНИЕ БОТОМ И ВСТРОЕННОЕ ВИДЕО
+     * 8. МОДАЛКА ДЕТАЛЕЙ, РЕДАКТОР БЛЮДА И ИИ-ОПТИМИЗАТОР
      ********************************************************************/
     function openDetailModal(recipeId) {
       const recipe = getAllRecipes().find(r => r.id === recipeId);
@@ -1321,7 +1900,10 @@
       const meals = getRecipeMeals(recipe);
 
       const isCustom = state.customRecipes.some(r => r.id === recipe.id);
-      document.getElementById("deleteCustomRecipeBtn").classList.toggle("hidden", !isCustom);
+      const isDefaultOverride = DEFAULT_RECIPES_DATA.some(r => r.id === recipe.id);
+      const delBtn = document.getElementById("deleteCustomRecipeBtn");
+      delBtn.classList.toggle("hidden", !isCustom);
+      delBtn.textContent = isDefaultOverride ? "Сбросить правки" : "Удалить";
 
       document.getElementById("modalCategoryBadge").textContent =
         recipe.category === "fastfood" ? `🍔 ${recipe.chain || "Фастфуд-хак"}` : `🍳 ${goals.join(" + ")}`;
@@ -1360,6 +1942,7 @@
       renderInlineVideoPlayer(recipe);
       setPlayerTabUI("video");
       updateModalDynamicContent();
+      renderAiAdvisorSection(recipe);
 
       const modal = document.getElementById("detailModal");
       modal.classList.remove("hidden");
@@ -1537,17 +2120,66 @@
     }
 
     /********************************************************************
-     * 8. КОНСТРУКТОР СВОЕГО РЕЦЕПТА И МОДАЛКА БЭКАПА
+     * 9. КОНСТРУКТОР И РЕДАКТОР РЕЦЕПТА (ADD & EDIT)
      ********************************************************************/
     function openAddRecipeModal() {
       triggerHaptic("light");
+      document.getElementById("addRecipeForm").reset();
+      document.getElementById("editingRecipeId").value = "";
+      document.getElementById("recipeFormModalTitle").textContent = "＋ Добавить свой рецепт";
+      document.getElementById("submitRecipeFormBtn").textContent = "Сохранить в облако";
+      document.getElementById("addRecipeModal").classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function openEditRecipeModal(recipeId) {
+      const recipe = getAllRecipes().find(r => r.id === recipeId);
+      if (!recipe) return;
+
+      triggerHaptic("light");
+      document.getElementById("editingRecipeId").value = recipe.id;
+      document.getElementById("recipeFormModalTitle").textContent = "✏️ Редактировать блюдо";
+      document.getElementById("submitRecipeFormBtn").textContent = "Сохранить изменения";
+
+      document.getElementById("newTitle").value = recipe.title || "";
+      document.getElementById("newCategory").value = recipe.category || "home";
+      document.getElementById("newTimeMinutes").value = recipe.timeMinutes || 20;
+      document.getElementById("newBaseServings").value = getBaseServings(recipe);
+      document.getElementById("newMacroMode").value = recipe.macrosMode || "per_portion";
+
+      document.getElementById("newKcal").value = recipe.macros.kcal;
+      document.getElementById("newProtein").value = recipe.macros.protein;
+      document.getElementById("newFat").value = recipe.macros.fat;
+      document.getElementById("newCarbs").value = recipe.macros.carbs;
+      document.getElementById("newVideoUrl").value = recipe.videoUrl || "";
+
+      const goals = getRecipeGoals(recipe);
+      document.querySelectorAll('input[name="newGoalItem"]').forEach(cb => {
+        cb.checked = goals.includes(cb.value);
+      });
+
+      const meals = getRecipeMeals(recipe);
+      document.querySelectorAll('input[name="newMealItem"]').forEach(cb => {
+        cb.checked = meals.includes(cb.value);
+      });
+
+      document.getElementById("newIngredientsText").value = (recipe.ingredients || [])
+        .map(ing => `${ing.name} | ${ing.amount} | ${ing.unit}`)
+        .join("\n");
+
+      document.getElementById("newStepsText").value = (recipe.steps || [])
+        .map(s => s.title)
+        .join("\n");
+
       document.getElementById("addRecipeModal").classList.remove("hidden");
       document.body.style.overflow = "hidden";
     }
 
     function closeAddRecipeModal() {
       document.getElementById("addRecipeModal").classList.add("hidden");
-      document.body.style.overflow = "";
+      if (document.getElementById("detailModal").classList.contains("hidden")) {
+        document.body.style.overflow = "";
+      }
     }
 
     function openBackupModal() {
@@ -1565,6 +2197,9 @@
     }
 
     function buildRecipeObjectFromForm() {
+      const editingId = document.getElementById("editingRecipeId").value.trim();
+      const existing = editingId ? getAllRecipes().find(r => r.id === editingId) : null;
+
       const title = document.getElementById("newTitle").value.trim() || "Моё блюдо";
       const category = document.getElementById("newCategory").value;
 
@@ -1604,29 +2239,33 @@
       }));
 
       return {
-        id: "custom-" + Date.now(),
+        id: existing ? existing.id : ("custom-" + Date.now()),
         category,
         title,
-        subtitle: `Разделы: ${goals.join(" + ")} • База: на ${baseServings} порц.`,
-        chain: category === "fastfood" ? "Свой сет" : null,
+        subtitle: existing && existing.subtitle && !existing.subtitle.startsWith("Разделы:")
+          ? existing.subtitle
+          : `Разделы: ${goals.join(" + ")} • База: на ${baseServings} порц.`,
+        chain: existing && existing.chain ? existing.chain : (category === "fastfood" ? "Свой сет" : null),
         goals,
         meals,
         timeCategory,
         timeMinutes,
-        emoji: category === "fastfood" ? "🍔" : "🥘",
-        gradient: "linear-gradient(135deg, #059669 0%, #0284c7 55%, #0f172a 100%)",
+        emoji: existing && existing.emoji ? existing.emoji : (category === "fastfood" ? "🍔" : "🥘"),
+        gradient: existing && existing.gradient ? existing.gradient : "linear-gradient(135deg, #059669 0%, #0284c7 55%, #0f172a 100%)",
         baseServings,
         macrosMode,
         macros: { kcal, protein, fat, carbs },
         videoUrl: videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
         videoDuration: `${timeMinutes} мин`,
+        comboBreakdown: existing ? existing.comboBreakdown : undefined,
+        orderHacks: existing ? existing.orderHacks : undefined,
         ingredients,
         steps
       };
     }
 
     /********************************************************************
-     * 9. БУФЕР ОБМЕНА И ТОСТЫ
+     * 10. БУФЕР ОБМЕНА И ТОСТЫ
      ********************************************************************/
     function copyTextToClipboard(text, message = "Скопировано в буфер обмена") {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1664,7 +2303,7 @@
     }
 
     /********************************************************************
-     * 10. ОБРАБОТЧИКИ СОБЫТИЙ
+     * 11. ОБРАБОТЧИКИ СОБЫТИЙ
      ********************************************************************/
     function bindEvents() {
       // Main category tabs
@@ -1672,13 +2311,7 @@
         btn.addEventListener("click", () => {
           triggerHaptic("light");
           state.activeCategory = btn.getAttribute("data-category");
-          document.querySelectorAll(".tab-btn").forEach(b => {
-            if (b.getAttribute("data-category") === state.activeCategory) {
-              b.className = "tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all bg-emerald-500 text-white shadow-sm";
-            } else {
-              b.className = "tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all tg-hint hover:opacity-90";
-            }
-          });
+          updateTabButtonsUI();
           renderRecipesGrid();
         });
       });
@@ -1742,14 +2375,60 @@
       document.getElementById("closeModalBtn").addEventListener("click", closeDetailModal);
       document.getElementById("modalBackdrop").addEventListener("click", closeDetailModal);
 
-      // Delete custom recipe
+      // Edit current recipe button
+      document.getElementById("editCurrentRecipeBtn").addEventListener("click", () => {
+        if (state.currentRecipeId) {
+          openEditRecipeModal(state.currentRecipeId);
+        }
+      });
+
+      // Delete custom recipe (or reset edited default recipe)
       document.getElementById("deleteCustomRecipeBtn").addEventListener("click", () => {
+        const isDefaultOverride = DEFAULT_RECIPES_DATA.some(r => r.id === state.currentRecipeId);
         state.customRecipes = state.customRecipes.filter(r => r.id !== state.currentRecipeId);
         saveCustomRecipes();
         updateCounts();
         renderRecipesGrid();
-        closeDetailModal();
-        showToast("Рецепт удалён из облака и памяти");
+        if (isDefaultOverride) {
+          openDetailModal(state.currentRecipeId);
+          showToast("Возвращена исходная версия рецепта");
+        } else {
+          closeDetailModal();
+          showToast("Рецепт удалён из облака и памяти");
+        }
+      });
+
+      // AI Goal Chips
+      document.querySelectorAll(".ai-goal-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          triggerHaptic("light");
+          state.activeAiGoal = btn.getAttribute("data-ai-goal");
+          document.getElementById("aiCustomPromptInput").value = "";
+          const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+          if (recipe) renderAiAdvisorSection(recipe);
+        });
+      });
+
+      // AI Custom Text Query
+      const runCustomAi = () => {
+        const q = document.getElementById("aiCustomPromptInput").value.trim();
+        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
+        if (recipe) renderAiAdvisorSection(recipe, q);
+      };
+      document.getElementById("runAiCustomBtn").addEventListener("click", runCustomAi);
+      document.getElementById("aiCustomPromptInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          runCustomAi();
+        }
+      });
+
+      // Apply AI Suggestion in 1 click
+      document.getElementById("aiSuggestionsContainer").addEventListener("click", (e) => {
+        const btn = e.target.closest(".apply-ai-btn");
+        if (!btn) return;
+        const idx = Number(btn.getAttribute("data-apply-ai-idx"));
+        applyAiSuggestionToRecipe(idx);
       });
 
       // Portion multiplier buttons
@@ -1842,26 +2521,25 @@
         if (recipe) renderStepsAndPlayer(recipe);
       });
 
-      // Add Custom Recipe Modal
+      // Add / Edit Custom Recipe Modal
       document.getElementById("openAddRecipeBtn").addEventListener("click", openAddRecipeModal);
       document.getElementById("closeAddRecipeBtn").addEventListener("click", closeAddRecipeModal);
       document.getElementById("addRecipeBackdrop").addEventListener("click", closeAddRecipeModal);
 
       document.getElementById("addRecipeForm").addEventListener("submit", (e) => {
         e.preventDefault();
-        const newRecipe = buildRecipeObjectFromForm();
-        state.customRecipes.unshift(newRecipe);
-        saveCustomRecipes();
-        updateCounts();
-        // Сбрасываем активные фильтры, чтобы новое блюдо гарантированно было видно сразу
+        const wasEditing = Boolean(document.getElementById("editingRecipeId").value.trim());
+        const savedRecipe = buildRecipeObjectFromForm();
+        upsertRecipeInStorage(savedRecipe);
+
         state.filters = { goal: "all", time: "all", meal: "all" };
-        state.activeCategory = newRecipe.category;
+        state.activeCategory = savedRecipe.category;
+        updateTabButtonsUI();
         renderFilterChipsUI();
         renderRecipesGrid();
         closeAddRecipeModal();
-        e.target.reset();
-        showToast("Сохранено в облако Telegram!");
-        openDetailModal(newRecipe.id);
+        showToast(wasEditing ? "Изменения сохранены в облако!" : "Рецепт добавлен в облако!");
+        openDetailModal(savedRecipe.id);
       });
 
       document.getElementById("exportJsonBtn").addEventListener("click", () => {
@@ -1873,6 +2551,19 @@
       document.getElementById("openBackupBtn").addEventListener("click", openBackupModal);
       document.getElementById("closeBackupBtn").addEventListener("click", closeBackupModal);
       document.getElementById("backupBackdrop").addEventListener("click", closeBackupModal);
+
+      document.getElementById("forceCloudPullBtn").addEventListener("click", () => {
+        triggerHaptic("light");
+        loadCustomRecipes(true);
+      });
+
+      document.getElementById("cloudRecipesQuickList").addEventListener("click", (e) => {
+        const row = e.target.closest(".cloud-quick-item");
+        if (!row) return;
+        const id = row.getAttribute("data-open-cloud-id");
+        closeBackupModal();
+        openDetailModal(id);
+      });
 
       document.getElementById("copyAllCustomJsonBtn").addEventListener("click", () => {
         if (state.customRecipes.length === 0) {
@@ -1900,13 +2591,33 @@
       });
     }
 
-    // Boot Application
+    // Boot Application & Auto-ReSync on Mobile Resume
     window.addEventListener("DOMContentLoaded", () => {
       initTelegramSDK();
       renderFilterChipsUI();
       renderRecipesGrid();
       bindEvents();
-      loadCustomRecipes();
+      loadCustomRecipes(false);
+
+      // Повторный опрос облака через 700 мс и 2000 мс после старта (на телефонах Telegram SDK иногда инициализирует CloudStorage с задержкой)
+      setTimeout(() => loadCustomRecipes(false), 700);
+      setTimeout(() => loadCustomRecipes(false), 2000);
+
+      // Клик по плашке «☁️ TG Облако» принудительно подтягивает свежие рецепты с серверов Telegram
+      const syncBtn = document.getElementById("cloudSyncBadge");
+      if (syncBtn) {
+        syncBtn.addEventListener("click", () => {
+          triggerHaptic("light");
+          loadCustomRecipes(true);
+        });
+      }
+
+      // Авто-синхронизация при разворачивании Telegram на телефоне
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+          loadCustomRecipes(false);
+        }
+      });
     });
   </script>
 </body>
