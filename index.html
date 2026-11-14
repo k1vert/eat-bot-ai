@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FitMacro TMA — Калькулятор порций, КБЖУ, редактор и ИИ-оптимизатор</title>
+  <title>FitMacro TMA — Калькулятор порций, КБЖУ и видео-рецепты</title>
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Tailwind CSS CDN -->
@@ -94,7 +94,7 @@
               <h1 class="text-lg font-extrabold tracking-tight leading-none">FitMacro</h1>
               <button id="cloudSyncBadge" type="button" title="Нажми для принудительной синхронизации с облаком" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/25 active:scale-95 transition">☁️ Cloud Sync ↻</button>
             </div>
-            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Редактор блюд + ИИ-оптимизатор КБЖУ</p>
+            <p id="userGreeting" class="text-xs tg-hint mt-0.5">Калькулятор порций, КБЖУ и редактор блюд</p>
           </div>
         </div>
 
@@ -210,7 +210,7 @@
         <div class="text-2xl shrink-0">🍟</div>
         <div class="text-xs leading-relaxed">
           <p class="font-bold text-amber-400 mb-0.5">Правило фастфуд-хакинга: 40–55 г белка при ≤650 ккал</p>
-          <p class="tg-hint">Любой сет и блюдо можно отредактировать кнопкой «✏️ Редачить» или прогнать через встроенного ИИ-нутрициолога.</p>
+          <p class="tg-hint">Любой сет и блюдо можно отредактировать под себя кнопкой «✏️ Редачить» и пересчитать на нужное число порций.</p>
         </div>
       </div>
     </div>
@@ -322,50 +322,6 @@
                 <div id="macroPerOneCarbs" class="text-[10px] tg-hint">энергия</div>
               </div>
             </div>
-          </div>
-
-          <!-- ✨ AI MACRO & INGREDIENT OPTIMIZER BLOCK ✨ -->
-          <div class="rounded-2xl p-4 bg-gradient-to-br from-indigo-500/15 via-purple-500/10 to-sky-500/15 border border-indigo-500/35 space-y-3">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-base">🧠</span>
-                  <h3 class="text-xs sm:text-sm font-extrabold text-indigo-300 uppercase tracking-wide">ИИ-Оптимизатор КБЖУ и замен</h3>
-                </div>
-                <p class="text-[11px] tg-hint mt-0.5">Анализирует продукты в твоём рецепте и предлагает умные замены или изменения граммовок, которые можно применить в 1 клик</p>
-              </div>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/25 text-indigo-300 border border-indigo-400/30 shrink-0">Smart AI</span>
-            </div>
-
-            <!-- Quick Goal Chips for AI Analysis -->
-            <div class="flex flex-wrap gap-1.5" id="aiGoalChipsContainer">
-              <button type="button" data-ai-goal="low_kcal" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-500 text-white shadow-sm transition">
-                📉 Снизить калории
-              </button>
-              <button type="button" data-ai-goal="high_protein" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
-                💪 Больше белка (+15–25 г)
-              </button>
-              <button type="button" data-ai-goal="low_fat" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
-                💧 Урезать жиры
-              </button>
-              <button type="button" data-ai-goal="high_carbs" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
-                ⚡ Больше углей / сытности
-              </button>
-              <button type="button" data-ai-goal="low_carbs" class="ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition">
-                🥗 Меньше углей (Сушка)
-              </button>
-            </div>
-
-            <!-- Custom Prompt Input for AI Advisor -->
-            <div class="flex gap-1.5">
-              <input id="aiCustomPromptInput" type="text" placeholder="Или напиши запрос: напр. «чем заменить йогурт» или «сделай 65г белка»..." class="flex-1 tg-card rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/60" />
-              <button id="runAiCustomBtn" type="button" class="px-3 py-2 rounded-xl bg-indigo-500 text-white text-xs font-extrabold hover:bg-indigo-600 active:scale-95 transition shrink-0">
-                Подобрать
-              </button>
-            </div>
-
-            <!-- AI Suggestions Output List -->
-            <div id="aiSuggestionsContainer" class="space-y-2 pt-1"></div>
           </div>
 
           <!-- Dynamic Auto-Multiplied Ingredients Table -->
@@ -1010,35 +966,46 @@
 
     // ВАЖНО: В Telegram CloudStorage лимит 4096 БАЙТ (UTF-8), а русские буквы занимают по 2 байта!
     // Поэтому режем по 1200 символов (~2400 байт) и ждём сохранения каждого чанка перед записью мета-ключа.
-    function saveToTelegramCloud(recipes) {
+    function toAsciiJson(obj) {
+      return JSON.stringify(obj).replace(/[\u007f-\uffff]/g, c =>
+        "\\u" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4)
+      );
+    }
+
+    function cloudSetItemAsync(cloud, key, val) {
+      return new Promise(resolve => {
+        try {
+          cloud.setItem(key, val, (err) => resolve(!err));
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    }
+
+    async function saveToTelegramCloud(recipes) {
       const cloud = getTelegramCloudStorage();
       if (!cloud) return;
 
       try {
         const sanitized = (recipes || []).map(sanitizeRecipeObject).filter(Boolean);
-        const payload = JSON.stringify(sanitized);
-        const chunkSize = 1200;
+        const payload = toAsciiJson(sanitized);
+        const chunkSize = 3500; // Чистый ASCII: 3500 символов = ровно 3500 байт (< 4096 лимита)
         const totalChunks = Math.ceil(payload.length / chunkSize);
 
         if (totalChunks === 0) {
-          cloud.setItem(CLOUD_META_KEY, JSON.stringify({ count: 0, recipeCount: 0, updatedAt: Date.now() }), () => {});
+          await cloudSetItemAsync(cloud, CLOUD_META_KEY, JSON.stringify({ count: 0, recipeCount: 0, updatedAt: Date.now() }));
           return;
         }
 
-        let completed = 0;
         for (let i = 0; i < totalChunks; i++) {
           const slice = payload.slice(i * chunkSize, (i + 1) * chunkSize);
-          cloud.setItem(`${CLOUD_CHUNK_PREFIX}${i}`, slice, () => {
-            completed++;
-            if (completed === totalChunks) {
-              cloud.setItem(
-                CLOUD_META_KEY,
-                JSON.stringify({ count: totalChunks, recipeCount: sanitized.length, updatedAt: Date.now() }),
-                () => {}
-              );
-            }
-          });
+          await cloudSetItemAsync(cloud, `${CLOUD_CHUNK_PREFIX}${i}`, slice);
         }
+        await cloudSetItemAsync(
+          cloud,
+          CLOUD_META_KEY,
+          JSON.stringify({ count: totalChunks, recipeCount: sanitized.length, updatedAt: Date.now() })
+        );
       } catch (e) {}
     }
 
@@ -1208,391 +1175,6 @@
     }
 
     /********************************************************************
-     * 4. УМНЫЙ ИИ-ОПТИМИЗАТОР КБЖУ И ЗАМЕН ИНГРЕДИЕНТОВ
-     ********************************************************************/
-    const INGREDIENT_KNOWLEDGE_BASE = [
-      {
-        keywords: ["курин", "грудк", "индейк", "филе"],
-        category: "lean_protein",
-        kcalPer100: 115, protPer100: 23, fatPer100: 2, carbsPer100: 0,
-        swapToLeaner: null,
-        swapToRicher: { newName: "Филе бедра индейки / курицы", kcalDeltaPer100: 45, protDeltaPer100: -2, fatDeltaPer100: 6, carbsDeltaPer100: 0 }
-      },
-      {
-        keywords: ["креветк", "тунец", "рыб", "минтай", "треск", "морепродукт"],
-        category: "lean_protein",
-        kcalPer100: 95, protPer100: 21, fatPer100: 1.5, carbsPer100: 0,
-        swapToLeaner: null
-      },
-      {
-        keywords: ["говядин", "вырезк", "фарш", "котлет", "свинин"],
-        category: "meat_protein",
-        kcalPer100: 185, protPer100: 20, fatPer100: 11, carbsPer100: 0,
-        swapToLeaner: { newName: "Филе грудки индейки (или постный фарш 95/5)", kcalDeltaPer100: -70, protDeltaPer100: 3, fatDeltaPer100: -9, carbsDeltaPer100: 0 }
-      },
-      {
-        keywords: ["яйц", "яиц"],
-        category: "egg",
-        kcalPerUnit: 75, protPerUnit: 6.5, fatPerUnit: 5.5, carbsPerUnit: 0.5
-      },
-      {
-        keywords: ["рис", "паст", "макарон", "гречк", "овсян", "круп", "лапш", "спагетти"],
-        category: "dry_carb",
-        kcalPer100: 345, protPer100: 11, fatPer100: 1.5, carbsPer100: 72,
-        swapToLowCarb: { newName: "Паста Ширатаки / кабачковая лапша (или цветная капуста рисом)", kcalDeltaPer100: -310, protDeltaPer100: -9, fatDeltaPer100: -1, carbsDeltaPer100: -68 }
-      },
-      {
-        keywords: ["картофел", "батат", "пюре"],
-        category: "starchy_veg",
-        kcalPer100: 82, protPer100: 2, fatPer100: 0.2, carbsPer100: 17,
-        swapToLowCarb: { newName: "Соцветия брокколи и цветной капусты (запечённые)", kcalDeltaPer100: -50, protDeltaPer100: 1, fatDeltaPer100: 0, carbsDeltaPer100: -12 }
-      },
-      {
-        keywords: ["тортиль", "лаваш", "булочк", "хлеб", "тост"],
-        category: "bread_carb",
-        kcalPerUnit: 175, protPerUnit: 5, fatPerUnit: 3, carbsPerUnit: 31
-      },
-      {
-        keywords: ["сыр", "пармезан", "моцарелл", "чеддер", "сулугуни"],
-        category: "cheese_fat",
-        kcalPer100: 290, protPer100: 24, fatPer100: 20, carbsPer100: 1,
-        swapToLeaner: { newName: "Сыр лёгкий 15% (или творожный сыр Light)", kcalDeltaPer100: -95, protDeltaPer100: 4, fatDeltaPer100: -11, carbsDeltaPer100: 0 }
-      },
-      {
-        keywords: ["масл", "авокадо", "орех", "кунжут", "майонез", "сливк"],
-        category: "pure_fat",
-        kcalPer100: 450, protPer100: 2, fatPer100: 48, carbsPer100: 3
-      },
-      {
-        keywords: ["йогурт", "сметан"],
-        category: "dairy",
-        kcalPer100: 68, protPer100: 9, fatPer100: 2, carbsPer100: 3.5
-      },
-      {
-        keywords: ["боксмастер", "чизбургер", "бургер", "ролл", "шаурм"],
-        category: "fastfood_main"
-      },
-      {
-        keywords: ["наггетс", "стрипс"],
-        category: "fastfood_side"
-      }
-    ];
-
-    function classifyIngredient(ingName) {
-      const lower = (ingName || "").toLowerCase();
-      for (const entry of INGREDIENT_KNOWLEDGE_BASE) {
-        if (entry.keywords.some(k => lower.includes(k))) {
-          return entry;
-        }
-      }
-      return null;
-    }
-
-    function generateAiSuggestions(recipe, goalType, customQuery = "") {
-      const suggestions = [];
-      const base = getBaseServings(recipe);
-      const q = customQuery.trim().toLowerCase();
-
-      let effectiveGoal = goalType;
-      if (q) {
-        if (q.includes("бел") || q.includes("протеин") || q.includes("мышц")) effectiveGoal = "high_protein";
-        else if (q.includes("жир") || q.includes("масл") || q.includes("легч")) effectiveGoal = "low_fat";
-        else if (q.includes("масс") || q.includes("больше ккал") || q.includes("сытн") || q.includes("угл")) effectiveGoal = "high_carbs";
-        else if (q.includes("сушк") || q.includes("меньше угл") || q.includes("кето")) effectiveGoal = "low_carbs";
-        else if (q.includes("похуд") || q.includes("сниз") || q.includes("калор") || q.includes("меньше ккал")) effectiveGoal = "low_kcal";
-      }
-
-      recipe.ingredients.forEach((ing, idx) => {
-        const info = classifyIngredient(ing.name);
-        const amt = Number(ing.amount) || 0;
-
-        // 1. Цель: БОЛЬШЕ БЕЛКА (high_protein)
-        if (effectiveGoal === "high_protein") {
-          if (info && (info.category === "lean_protein" || info.category === "meat_protein")) {
-            const addAmt = Math.round(80 * base);
-            const protGain = Math.round((info.protPer100 || 22) * 0.8);
-            const kcalGain = Math.round((info.kcalPer100 || 120) * 0.8);
-            suggestions.push({
-              title: `Увеличить «${ing.name}» на +${addAmt} ${ing.unit}`,
-              reason: `Даст сразу +${protGain} г чистого белка на порцию при минимальном росте жиров.`,
-              badge: `+${protGain} г белка | +${kcalGain} ккал`,
-              action: {
-                type: "scale_ingredient",
-                ingIndex: idx,
-                newAmount: amt + addAmt,
-                macroDelta: { kcal: kcalGain, protein: protGain, fat: 1, carbs: 0 }
-              }
-            });
-          }
-          if (info && info.category === "egg") {
-            suggestions.push({
-              title: `Добавить к «${ing.name}» +2 яичных белка (или +1 яйцо)`,
-              reason: `Яичный белок — самый быстрый способ поднять белок блюда на +8 г всего за 35 ккал.`,
-              badge: `+8 г белка | +35 ккал`,
-              action: {
-                type: "add_ingredient",
-                newIng: { name: "Яичный белок (доп. протеин)", amount: 2 * base, unit: "шт", aisle: "Яйца" },
-                macroDelta: { kcal: 35, protein: 8, fat: 0, carbs: 0 }
-              }
-            });
-          }
-          if (info && info.category === "fastfood_side") {
-            suggestions.push({
-              title: `Заменить «${ing.name}» на двойную порцию куриных стрипсов / креветок`,
-              reason: `В фастфуде стрипсы из цельного филе дают больше белка и меньше жира из панировки, чем наггетсы.`,
-              badge: `+14 г белка | +45 ккал`,
-              action: {
-                type: "replace_ingredient",
-                ingIndex: idx,
-                newName: "Стрипсы оригинальные (5 шт.) / Креветки",
-                newAmount: amt,
-                macroDelta: { kcal: 45, protein: 14, fat: -2, carbs: 2 }
-              }
-            });
-          }
-        }
-
-        // 2. Цель: СНИЗИТЬ КАЛОРИИ (low_kcal)
-        if (effectiveGoal === "low_kcal") {
-          if (info && info.category === "dry_carb" && amt >= 40) {
-            const reduceAmt = Math.round(amt * 0.3);
-            const perPortionReduce = reduceAmt / base;
-            const kcalSave = Math.round((perPortionReduce / 100) * 345);
-            const carbSave = Math.round((perPortionReduce / 100) * 72);
-            suggestions.push({
-              title: `Уменьшить «${ing.name}» с ${amt} до ${amt - reduceAmt} ${ing.unit} (-30%)`,
-              reason: `Срезает ${kcalSave} ккал за счёт быстрых/сложных углеводов без потери белка и сытости.`,
-              badge: `−${kcalSave} ккал | −${carbSave} г углей`,
-              action: {
-                type: "scale_ingredient",
-                ingIndex: idx,
-                newAmount: amt - reduceAmt,
-                macroDelta: { kcal: -kcalSave, protein: -2, fat: 0, carbs: -carbSave }
-              }
-            });
-          }
-          if (info && info.swapToLeaner) {
-            const perPortionAmt = amt / base;
-            const kcalSave = Math.max(35, Math.round(Math.abs(info.swapToLeaner.kcalDeltaPer100) * (perPortionAmt / 100)));
-            const fatSave = Math.max(4, Math.round(Math.abs(info.swapToLeaner.fatDeltaPer100) * (perPortionAmt / 100)));
-            suggestions.push({
-              title: `Заменить «${ing.name}» → «${info.swapToLeaner.newName}»`,
-              reason: `Убирает скрытые животные жиры, сохраняя объём порции и повышая долю белка.`,
-              badge: `−${kcalSave} ккал | −${fatSave} г жиров`,
-              action: {
-                type: "replace_ingredient",
-                ingIndex: idx,
-                newName: info.swapToLeaner.newName,
-                newAmount: amt,
-                macroDelta: { kcal: -kcalSave, protein: 3, fat: -fatSave, carbs: 0 }
-              }
-            });
-          }
-          if (info && info.category === "fastfood_main") {
-            suggestions.push({
-              title: `Кастом в киоске: убрать нижнюю булочку или 1 ломтик сыра у «${ing.name}»`,
-              reason: `Минус ~95 ккал быстрых углеводов и насыщенных жиров за 1 секунду.`,
-              badge: `−95 ккал | −14 г углей`,
-              action: {
-                type: "replace_ingredient",
-                ingIndex: idx,
-                newName: `${ing.name} (без нижней булочки / -1 сыр)`,
-                newAmount: amt,
-                macroDelta: { kcal: -95, protein: -2, fat: -3, carbs: -14 }
-              }
-            });
-          }
-        }
-
-        // 3. Цель: УРЕЗАТЬ ЖИРЫ (low_fat)
-        if (effectiveGoal === "low_fat") {
-          if (info && (info.category === "pure_fat" || info.category === "cheese_fat")) {
-            const newAmt = Math.max(1, Math.round(amt * 0.5));
-            suggestions.push({
-              title: `Сократить «${ing.name}» вдвое (${amt} → ${newAmt} ${ing.unit})`,
-              reason: `Жиры дают 9 ккал на каждый грамм — уменьшение вдвое сразу облегчает блюдо.`,
-              badge: `−75 ккал | −8 г жиров`,
-              action: {
-                type: "scale_ingredient",
-                ingIndex: idx,
-                newAmount: newAmt,
-                macroDelta: { kcal: -75, protein: -1, fat: -8, carbs: 0 }
-              }
-            });
-          }
-          if (info && info.swapToLeaner) {
-            suggestions.push({
-              title: `Заменить «${ing.name}» на «${info.swapToLeaner.newName}»`,
-              reason: `Прямая замена жирного компонента на высокобелковый аналог.`,
-              badge: `−80 ккал | −9 г жиров | +3 г белка`,
-              action: {
-                type: "replace_ingredient",
-                ingIndex: idx,
-                newName: info.swapToLeaner.newName,
-                newAmount: amt,
-                macroDelta: { kcal: -80, protein: 3, fat: -9, carbs: 0 }
-              }
-            });
-          }
-        }
-
-        // 4. Цель: БОЛЬШЕ УГЛЕЙ / НА МАССУ (high_carbs)
-        if (effectiveGoal === "high_carbs") {
-          if (info && (info.category === "dry_carb" || info.category === "starchy_veg")) {
-            const addAmt = info.category === "dry_carb" ? Math.round(35 * base) : Math.round(100 * base);
-            const carbGain = info.category === "dry_carb" ? 25 : 17;
-            const kcalGain = info.category === "dry_carb" ? 120 : 85;
-            suggestions.push({
-              title: `Увеличить «${ing.name}» на +${addAmt} ${ing.unit} (${amt} → ${amt + addAmt} ${ing.unit})`,
-              reason: `Отличный способ повысить калорийную плотность и запасы гликогена для силовых тренировок.`,
-              badge: `+${kcalGain} ккал | +${carbGain} г углей`,
-              action: {
-                type: "scale_ingredient",
-                ingIndex: idx,
-                newAmount: amt + addAmt,
-                macroDelta: { kcal: kcalGain, protein: 3, fat: 1, carbs: carbGain }
-              }
-            });
-          }
-        }
-
-        // 5. Цель: МЕНЬШЕ УГЛЕЙ / СУШКА (low_carbs)
-        if (effectiveGoal === "low_carbs") {
-          if (info && info.swapToLowCarb) {
-            suggestions.push({
-              title: `Замена на сушку: «${ing.name}» → «${info.swapToLowCarb.newName}»`,
-              reason: `Почти полностью убирает углеводы из гарнира, сохраняя большой объём тарелки и клетчатку.`,
-              badge: `−160 ккал | −35 г углей`,
-              action: {
-                type: "replace_ingredient",
-                ingIndex: idx,
-                newName: info.swapToLowCarb.newName,
-                newAmount: Math.round(amt * 1.8),
-                macroDelta: { kcal: -160, protein: -2, fat: 0, carbs: -35 }
-              }
-            });
-          }
-        }
-      });
-
-      if (suggestions.length < 2) {
-        if (effectiveGoal === "high_protein") {
-          suggestions.push({
-            title: `Добавить порцию греческого йогурта 2% (100 г) или 100 г филе грудки`,
-            reason: `Универсальный белковый буст к любому приёму пищи без лишних жиров.`,
-            badge: `+18 г белка | +95 ккал`,
-            action: {
-              type: "add_ingredient",
-              newIng: { name: "Филе грудки / Греческий йогурт 2% (белковый буст)", amount: 100 * base, unit: "г", aisle: "Белковый доп" },
-              macroDelta: { kcal: 95, protein: 18, fat: 2, carbs: 2 }
-            }
-          });
-        } else if (effectiveGoal === "high_carbs") {
-          suggestions.push({
-            title: `Добавить цельнозерновую тортилью / тост (65 г) или +50 г риса`,
-            reason: `Добавляет качественные долгие углеводы для профицита калорий.`,
-            badge: `+175 ккал | +32 г углей`,
-            action: {
-              type: "add_ingredient",
-              newIng: { name: "Цельнозерновая тортилья / рис (доп. углеводы)", amount: 65 * base, unit: "г", aisle: "Бакалея" },
-              macroDelta: { kcal: 175, protein: 5, fat: 2, carbs: 32 }
-            }
-          });
-        } else {
-          const firstIdx = 0;
-          const firstIng = recipe.ingredients[firstIdx];
-          if (firstIng) {
-            const newAmt = Math.max(10, Math.round(firstIng.amount * 0.85));
-            suggestions.push({
-              title: `Уменьшить граммовку «${firstIng.name}» на 15% (${firstIng.amount} → ${newAmt} ${firstIng.unit})`,
-              reason: `Плавное снижение общей калорийности порции на ~70 ккал без изменения вкусового баланса.`,
-              badge: `−70 ккал | −8 г углей/жиров`,
-              action: {
-                type: "scale_ingredient",
-                ingIndex: firstIdx,
-                newAmount: newAmt,
-                macroDelta: { kcal: -70, protein: -3, fat: -3, carbs: -8 }
-              }
-            });
-          }
-        }
-      }
-
-      return suggestions.slice(0, 3);
-    }
-
-    function renderAiAdvisorSection(recipe, customQuery = "") {
-      const container = document.getElementById("aiSuggestionsContainer");
-      if (!container || !recipe) return;
-
-      document.querySelectorAll(".ai-goal-btn").forEach(btn => {
-        const g = btn.getAttribute("data-ai-goal");
-        if (g === state.activeAiGoal && !customQuery) {
-          btn.className = "ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-500 text-white shadow-sm transition";
-        } else {
-          btn.className = "ai-goal-btn px-2.5 py-1.5 rounded-xl text-[11px] font-bold tg-card hover:opacity-90 transition";
-        }
-      });
-
-      const list = generateAiSuggestions(recipe, state.activeAiGoal, customQuery);
-      state.currentAiSuggestions = list;
-
-      container.innerHTML = list.map((sug, i) => `
-        <div class="tg-card rounded-xl p-3 border border-indigo-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div class="space-y-1">
-            <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-xs font-extrabold">${sug.title}</span>
-              <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">${sug.badge}</span>
-            </div>
-            <p class="text-[11px] tg-hint leading-snug">${sug.reason}</p>
-          </div>
-          <button type="button" data-apply-ai-idx="${i}" class="apply-ai-btn shrink-0 px-3 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/35 text-[11px] font-extrabold hover:bg-indigo-500 hover:text-white active:scale-95 transition">
-            ✨ Применить в рецепт
-          </button>
-        </div>
-      `).join("");
-    }
-
-    function applyAiSuggestionToRecipe(sugIndex) {
-      const sug = state.currentAiSuggestions[sugIndex];
-      const current = getAllRecipes().find(r => r.id === state.currentRecipeId);
-      if (!sug || !current) return;
-
-      triggerHaptic("medium");
-      const updated = JSON.parse(JSON.stringify(current));
-      const act = sug.action;
-
-      if (act.type === "scale_ingredient" && updated.ingredients[act.ingIndex]) {
-        updated.ingredients[act.ingIndex].amount = act.newAmount;
-      } else if (act.type === "replace_ingredient" && updated.ingredients[act.ingIndex]) {
-        updated.ingredients[act.ingIndex].name = act.newName;
-        updated.ingredients[act.ingIndex].amount = act.newAmount;
-      } else if (act.type === "add_ingredient" && act.newIng) {
-        updated.ingredients.push(act.newIng);
-      }
-
-      if (act.macroDelta) {
-        const factor = updated.macrosMode === "total_batch" ? getBaseServings(updated) : 1;
-        updated.macros.kcal = Math.max(50, updated.macros.kcal + act.macroDelta.kcal * factor);
-        updated.macros.protein = Math.max(1, updated.macros.protein + act.macroDelta.protein * factor);
-        updated.macros.fat = Math.max(1, updated.macros.fat + act.macroDelta.fat * factor);
-        updated.macros.carbs = Math.max(0, updated.macros.carbs + act.macroDelta.carbs * factor);
-      }
-
-      upsertRecipeInStorage(updated);
-      updateModalDynamicContent();
-      renderAiAdvisorSection(updated);
-
-      const isCustom = state.customRecipes.some(r => r.id === updated.id);
-      const isDefaultOverride = DEFAULT_RECIPES_DATA.some(r => r.id === updated.id);
-      const delBtn = document.getElementById("deleteCustomRecipeBtn");
-      delBtn.classList.toggle("hidden", !isCustom);
-      delBtn.textContent = isDefaultOverride ? "Сбросить правки" : "Удалить";
-
-      showToast("Рецепт и КБЖУ обновлены по рекомендации ИИ!");
-    }
-
-    /********************************************************************
      * 5. ВСТРОЕННЫЙ ВИДЕО-ПЛЕЕР
      ********************************************************************/
     function parseVideoSource(recipe) {
@@ -1689,7 +1271,7 @@
         if (user && user.first_name) {
           const greetingEl = document.getElementById("userGreeting");
           if (greetingEl) {
-            greetingEl.textContent = `Привет, ${user.first_name}! Редактор и ИИ-оптимизатор готовы`;
+            greetingEl.textContent = `Привет, ${user.first_name}! Считаем КБЖУ и порции`;
           }
         }
 
@@ -1847,7 +1429,7 @@
               ${getDishArtHtml(recipe)}
               <div class="p-4">
                 <h3 class="text-base font-extrabold leading-snug mb-1">${recipe.title}</h3>
-                <p class="text-xs tg-hint line-clamp-2 mb-3.5">${recipe.subtitle || "Рецепт с авто-умножением граммовок и ИИ-оптимизатором"}</p>
+                <p class="text-xs tg-hint line-clamp-2 mb-3.5">${recipe.subtitle || "Рецепт с авто-умножением граммовок и встроенным видео"}</p>
 
                 <!-- Macro Strip (per 1 portion) -->
                 <div class="grid grid-cols-4 gap-1.5 text-center p-2 rounded-xl bg-slate-500/10">
@@ -1872,7 +1454,7 @@
             </div>
 
             <div class="px-4 pb-3.5 pt-1 flex items-center justify-between text-xs">
-              <span class="text-[11px] font-semibold text-emerald-400">🧠 ИИ-разбор • ⚡ ${proteinCaloriePct}% белка</span>
+              <span class="text-[11px] font-semibold text-emerald-400">🎬 Видео внутри • ⚡ ${proteinCaloriePct}% белка</span>
               <span class="font-bold flex items-center gap-1 text-sky-400">
                 <span>Открыть</span>
                 <span>→</span>
@@ -1942,7 +1524,6 @@
       renderInlineVideoPlayer(recipe);
       setPlayerTabUI("video");
       updateModalDynamicContent();
-      renderAiAdvisorSection(recipe);
 
       const modal = document.getElementById("detailModal");
       modal.classList.remove("hidden");
@@ -2396,39 +1977,6 @@
           closeDetailModal();
           showToast("Рецепт удалён из облака и памяти");
         }
-      });
-
-      // AI Goal Chips
-      document.querySelectorAll(".ai-goal-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          triggerHaptic("light");
-          state.activeAiGoal = btn.getAttribute("data-ai-goal");
-          document.getElementById("aiCustomPromptInput").value = "";
-          const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
-          if (recipe) renderAiAdvisorSection(recipe);
-        });
-      });
-
-      // AI Custom Text Query
-      const runCustomAi = () => {
-        const q = document.getElementById("aiCustomPromptInput").value.trim();
-        const recipe = getAllRecipes().find(r => r.id === state.currentRecipeId);
-        if (recipe) renderAiAdvisorSection(recipe, q);
-      };
-      document.getElementById("runAiCustomBtn").addEventListener("click", runCustomAi);
-      document.getElementById("aiCustomPromptInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          runCustomAi();
-        }
-      });
-
-      // Apply AI Suggestion in 1 click
-      document.getElementById("aiSuggestionsContainer").addEventListener("click", (e) => {
-        const btn = e.target.closest(".apply-ai-btn");
-        if (!btn) return;
-        const idx = Number(btn.getAttribute("data-apply-ai-idx"));
-        applyAiSuggestionToRecipe(idx);
       });
 
       // Portion multiplier buttons
